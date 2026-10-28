@@ -1,0 +1,626 @@
+<!doctype html>
+<html lang="bn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0B6B5C">
+<meta name="color-scheme" content="light dark">
+<title>সমিতির হিসাব</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anek+Bangla:wght@500;700;800&family=Hind+Siliguri:wght@400;500;600&display=swap">
+<style>
+:root {
+  --bg: #F2F5F3;
+  --surface: #FFFFFF;
+  --ink: #13261F;
+  --muted: #566861;
+  --line: #D5DFDA;
+  --accent: #0B6B5C;
+  --accent-ink: #FFFFFF;
+  --accent-soft: #DCEFE9;
+  --ok: #17794B;
+  --ok-soft: #DDF1E5;
+  --due: #A94A17;
+  --due-soft: #F8E6DA;
+  --font-display: "Anek Bangla", "Hind Siliguri", "Noto Sans Bengali", system-ui, sans-serif;
+  --font-body: "Hind Siliguri", "Noto Sans Bengali", system-ui, sans-serif;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0D1614; --surface: #142320; --ink: #E5EEEA; --muted: #9DB0A9; --line: #264039;
+    --accent: #5BC9B6; --accent-ink: #07201B; --accent-soft: #17332E;
+    --ok: #6BD39B; --ok-soft: #163626; --due: #F0A06B; --due-soft: #3A2519;
+    color-scheme: dark;
+  }
+}
+* { box-sizing: border-box; }
+html { background: var(--bg); }
+body {
+  margin: 0; background: var(--bg); color: var(--ink);
+  font-family: var(--font-body); font-size: 16px; line-height: 1.55;
+  padding-top: calc(20px + env(safe-area-inset-top, 0px));
+  padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px));
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+main { max-width: 880px; margin: 0 auto; display: flex; flex-direction: column; gap: 28px; }
+h1, h2, h3, p { margin: 0; }
+h1, h2 { font-family: var(--font-display); text-wrap: balance; }
+button, input { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.num { font-variant-numeric: tabular-nums; }
+[hidden] { display: none !important; }
+
+.top { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 8px 16px; }
+.top h1 { font-size: 30px; font-weight: 800; line-height: 1.2; }
+.top p { color: var(--muted); font-size: 15px; }
+.top .right { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.live { display: inline-flex; align-items: center; gap: 7px; font-size: 14px; color: var(--muted); padding: 4px 12px; border: 1px solid var(--line); border-radius: 99px; background: var(--surface); }
+.live i { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); }
+.live.on i { background: var(--ok); box-shadow: 0 0 0 3px var(--ok-soft); }
+
+.summary { display: grid; grid-template-columns: 1.3fr 1fr; gap: 14px; }
+.hero { background: var(--accent); color: var(--accent-ink); border-radius: 14px; padding: 20px; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.hero .lbl { font-size: 15px; opacity: .85; }
+.hero .big { font-family: var(--font-display); font-weight: 800; font-size: 44px; line-height: 1.1; overflow-wrap: anywhere; }
+.hero .last { font-size: 14px; opacity: .85; }
+.mini { display: grid; gap: 14px; min-width: 0; }
+.stat { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.stat .lbl { font-size: 14px; color: var(--muted); }
+.stat .val { font-family: var(--font-display); font-weight: 700; font-size: 22px; line-height: 1.25; overflow-wrap: anywhere; }
+.stat .val small { font-weight: 500; font-size: 15px; color: var(--muted); }
+.bar { height: 6px; border-radius: 99px; background: var(--accent-soft); overflow: hidden; margin-top: 4px; }
+.bar b { display: block; height: 100%; background: var(--accent); border-radius: 99px; transition: width .4s ease; }
+.stat.warn .val { color: var(--due); }
+
+.sec-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 12px; }
+.sec-head h2 { font-size: 21px; font-weight: 700; }
+.nav { display: inline-flex; align-items: center; gap: 6px; }
+.nav .cur { min-width: 120px; text-align: center; font-weight: 600; }
+.ibtn { width: 38px; height: 38px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); font-size: 20px; line-height: 1; }
+.ibtn:hover { background: var(--accent-soft); }
+.tbtn { padding: 7px 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); font-size: 14px; }
+.tbtn:hover { background: var(--accent-soft); }
+
+.list { list-style: none; margin: 0; padding: 0; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
+.row { padding: 12px 16px; display: grid; gap: 10px; border-top: 1px solid var(--line); }
+.row:first-child { border-top: 0; }
+.row .line1 { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 12px; }
+.who { min-width: 0; display: flex; flex-direction: column; }
+.who .name { font-weight: 600; overflow-wrap: anywhere; }
+.who .meta { font-size: 13px; color: var(--muted); }
+.pill { display: inline-flex; align-items: center; gap: 6px; padding: 3px 12px; border-radius: 99px; font-size: 14px; font-weight: 500; background: var(--line); color: var(--muted); white-space: nowrap; }
+.pill.paid { background: var(--ok-soft); color: var(--ok); }
+.pill.due { background: var(--due-soft); color: var(--due); }
+.acts { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.btn { padding: 7px 14px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); font-size: 14px; font-weight: 500; }
+.btn:hover { background: var(--accent-soft); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.btn.primary:hover { filter: brightness(1.08); }
+.btn.danger { color: var(--due); border-color: var(--due); }
+.btn:disabled { opacity: .55; cursor: default; }
+.field { padding: 8px 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--bg); min-width: 0; }
+.field.amt { width: 110px; }
+.empty { padding: 28px 18px; text-align: center; color: var(--muted); background: var(--surface); border: 1px dashed var(--line); border-radius: 14px; }
+.empty strong { display: block; color: var(--ink); font-family: var(--font-display); font-size: 18px; margin-bottom: 4px; }
+
+.scroll { overflow-x: auto; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; }
+table { border-collapse: separate; border-spacing: 0; width: 100%; min-width: 880px; font-size: 14px; }
+th, td { padding: 9px 8px; text-align: center; border-bottom: 1px solid var(--line); white-space: nowrap; }
+tbody tr:last-child td, tfoot td { border-bottom: 0; }
+thead th { font-weight: 600; color: var(--muted); background: var(--surface); }
+th button { background: none; border: 0; padding: 0; color: inherit; font-weight: inherit; }
+th button:hover { color: var(--accent); }
+th:first-child, td:first-child { position: sticky; left: 0; text-align: left; background: var(--surface); z-index: 1; padding-left: 14px; min-width: 112px; max-width: 150px; overflow: hidden; text-overflow: ellipsis; font-weight: 600; }
+td.paid { color: var(--ok); font-weight: 500; }
+td.due { color: var(--due); background: var(--due-soft); font-size: 12px; }
+td.na { color: var(--line); }
+th.cur, td.cur { box-shadow: inset 0 0 0 9999px color-mix(in srgb, var(--accent) 7%, transparent); }
+th.sel button { color: var(--accent); text-decoration: underline; text-underline-offset: 4px; }
+td.tot { font-weight: 600; }
+tfoot td { font-weight: 600; border-top: 2px solid var(--line); }
+.tag { font-size: 11px; font-weight: 500; color: var(--muted); border: 1px solid var(--line); border-radius: 6px; padding: 0 5px; margin-left: 6px; }
+.hint { font-size: 13px; color: var(--muted); margin-top: 8px; }
+
+.admin { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 18px; display: flex; flex-direction: column; gap: 20px; }
+.admin h3 { font-family: var(--font-display); font-size: 17px; font-weight: 700; margin-bottom: 8px; }
+.form { display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end; }
+.form label { display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: var(--muted); min-width: 0; }
+.form .field { color: var(--ink); }
+.mrow { padding: 10px 0; border-top: 1px solid var(--line); display: grid; gap: 8px; }
+.mrow:first-child { border-top: 0; }
+.mrow.off .name { color: var(--muted); }
+
+#toast { position: fixed; left: 0; right: 0; bottom: 0; display: flex; justify-content: center; padding: 12px max(16px, env(safe-area-inset-left, 0px)) calc(14px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-right, 0px)); pointer-events: none; }
+#toast span { background: var(--ink); color: var(--bg); padding: 9px 16px; border-radius: 10px; font-size: 15px; box-shadow: 0 6px 20px rgba(0,0,0,.22); }
+
+@media (max-width: 600px) {
+  .summary { grid-template-columns: 1fr; }
+  .mini { grid-template-columns: 1fr 1fr; }
+  .hero .big { font-size: 38px; }
+  .top h1 { font-size: 26px; }
+}
+@media (prefers-reduced-motion: reduce) { .bar b { transition: none; } }
+</style>
+</head>
+<body>
+<main>
+  <header class="top">
+    <div>
+      <h1 id="society-name">আমাদের সমিতি</h1>
+      <p>মাসিক জমার হিসাব</p>
+    </div>
+    <div class="right">
+      <span class="live" id="live"><i></i><span id="live-text">সংযোগ হচ্ছে…</span></span>
+      <button class="tbtn" id="auth-btn" type="button">কোষাধ্যক্ষ লগইন</button>
+    </div>
+  </header>
+
+  <section class="admin" id="login" hidden>
+    <h3>কোষাধ্যক্ষ লগইন</h3>
+    <form class="form" id="login-form">
+      <label>ইমেইল<input class="field" id="li-email" type="email" autocomplete="username" required></label>
+      <label>পাসওয়ার্ড<input class="field" id="li-pass" type="password" autocomplete="current-password" required></label>
+      <button class="btn primary" type="submit" id="li-go">লগইন</button>
+    </form>
+    <p class="hint" style="margin:0">শুধু কোষাধ্যক্ষের লগইন লাগে। বাকিরা লগইন ছাড়াই হিসাব দেখতে পারবেন।</p>
+  </section>
+
+  <section class="summary" id="summary" aria-label="সারসংক্ষেপ"></section>
+  <section id="month-sec"></section>
+  <section id="ledger-sec"></section>
+
+  <section class="admin" id="admin" hidden>
+    <div>
+      <h3>নতুন সদস্য যোগ করুন</h3>
+      <form class="form" id="add-form" autocomplete="off">
+        <label>নাম<input class="field" id="nm-name" type="text" required maxlength="60"></label>
+        <label>মাসিক চাঁদা (৳)<input class="field amt" id="nm-amt" type="text" inputmode="numeric" required placeholder="৫০০"></label>
+        <label>শুরুর মাস<input class="field" id="nm-start" type="month" required></label>
+        <button class="btn primary" type="submit" id="nm-go">যোগ করুন</button>
+      </form>
+    </div>
+    <div>
+      <h3>সদস্যদের তালিকা</h3>
+      <div id="member-list"></div>
+    </div>
+    <div>
+      <h3>সমিতির নাম</h3>
+      <form class="form" id="name-form" autocomplete="off">
+        <label>নাম<input class="field" id="set-name" type="text" maxlength="60"></label>
+        <button class="btn" type="submit">সংরক্ষণ</button>
+      </form>
+    </div>
+  </section>
+
+  <p class="hint" id="viewer-note" hidden>এটি দেখার মোড। জমা লেখা বা বদলানোর কাজ করতে পারেন শুধু কোষাধ্যক্ষ।</p>
+</main>
+<div id="toast" role="status" aria-live="polite"><span hidden></span></div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script>
+(function () {
+  var $ = function (s) { return document.querySelector(s); };
+  var BN = new Intl.NumberFormat('bn-BD');
+  var YF = new Intl.NumberFormat('bn-BD', { useGrouping: false });
+  var fmt = function (n) { return BN.format(Math.round(Number(n) || 0)); };
+  var taka = function (n) { return '৳' + fmt(n); };
+  var MONTHS = ['জানুয়ারি','ফেব্রুয়ারি','মার্চ','এপ্রিল','মে','জুন','জুলাই','আগস্ট','সেপ্টেম্বর','অক্টোবর','নভেম্বর','ডিসেম্বর'];
+  var SHORT = ['জানু','ফেব্রু','মার্চ','এপ্রি','মে','জুন','জুলাই','আগ','সেপ্টে','অক্টো','নভে','ডিসে'];
+  var pad = function (n) { return String(n).padStart(2, '0'); };
+  var ymKey = function (y, m0) { return y + '-' + pad(m0 + 1); };
+  var now = new Date();
+  var CUR = ymKey(now.getFullYear(), now.getMonth());
+  var monthLabel = function (k) { var p = k.split('-'); return MONTHS[+p[1] - 1] + ' ' + YF.format(+p[0]); };
+  var shiftMonth = function (k, d) { var p = k.split('-'); var t = (+p[0]) * 12 + (+p[1] - 1) + d; return ymKey(Math.floor(t / 12), t % 12); };
+  var dateShort = function (ts) { try { return new Date(ts).toLocaleDateString('bn-BD', { day: 'numeric', month: 'short' }); } catch (e) { return ''; } };
+  var toNum = function (s) {
+    var t = String(s).replace(/[০-৯]/g, function (c) { return '০১২৩৪৫৬৭৮৯'.indexOf(c); }).replace(/[,\s৳]/g, '');
+    var n = Number(t);
+    return t !== '' && isFinite(n) ? n : NaN;
+  };
+
+  function h(tag, props) {
+    var el = document.createElement(tag);
+    if (props) Object.keys(props).forEach(function (k) {
+      var v = props[k];
+      if (v == null || v === false) return;
+      if (k === 'class') el.className = v;
+      else if (k === 'text') el.textContent = v;
+      else if (k.indexOf('on') === 0) el.addEventListener(k.slice(2), v);
+      else if (v === true) el.setAttribute(k, '');
+      else el.setAttribute(k, v);
+    });
+    for (var i = 2; i < arguments.length; i++) {
+      var kids = [].concat(arguments[i]);
+      for (var j = 0; j < kids.length; j++) {
+        var c = kids[j];
+        if (c == null || c === false) continue;
+        el.append(c.nodeType ? c : document.createTextNode(c));
+      }
+    }
+    return el;
+  }
+
+  var S = {
+    members: [], deposits: {}, name: 'আমাদের সমিতি',
+    month: CUR, year: now.getFullYear(),
+    canEdit: false, ready: { m: false, d: false }, err: '', online: navigator.onLine,
+    editRow: null, editAmt: '', confirm: null, em: null, showLogin: false
+  };
+  var db = null, auth = null;
+
+  function activeFor(month) {
+    return S.members.filter(function (m) { return m.active !== false && m.start <= month; });
+  }
+  function memberTotals(m) {
+    var total = 0, paid = {};
+    Object.keys(S.deposits).forEach(function (k) {
+      var d = S.deposits[k];
+      if (d.memberId === m.id) { total += d.amount; paid[d.month] = true; }
+    });
+    var dues = 0;
+    if (m.active !== false) {
+      var k = m.start < '2000-01' ? '2000-01' : m.start, guard = 0;
+      while (k <= CUR && guard++ < 600) { if (!paid[k]) dues++; k = shiftMonth(k, 1); }
+    }
+    return { total: total, dues: dues };
+  }
+
+  function renderHead() {
+    $('#society-name').textContent = S.name;
+    document.title = S.name + ' – হিসাব';
+    var ok = S.ready.m && S.ready.d && !S.err;
+    $('#live').classList.toggle('on', ok && S.online);
+    $('#live-text').textContent = S.err ? 'সংযোগ নেই' : !S.online ? 'অফলাইন' : ok ? 'লাইভ' : 'সংযোগ হচ্ছে…';
+    var inp = $('#set-name');
+    if (document.activeElement !== inp) inp.value = S.name;
+    $('#admin').hidden = !S.canEdit;
+    $('#login').hidden = S.canEdit || !S.showLogin;
+    $('#viewer-note').hidden = S.canEdit || !!S.err;
+    $('#auth-btn').textContent = S.canEdit ? 'লগআউট' : (S.showLogin ? 'বন্ধ করুন' : 'কোষাধ্যক্ষ লগইন');
+    $('#auth-btn').hidden = !auth;
+  }
+
+  function renderSummary() {
+    var box = $('#summary'); box.replaceChildren();
+    var total = 0, last = null, got = 0;
+    Object.keys(S.deposits).forEach(function (k) {
+      var d = S.deposits[k]; total += d.amount;
+      if (!last || (d.at || 0) > (last.at || 0)) last = d;
+      if (d.month === S.month) got += d.amount;
+    });
+    var act = activeFor(S.month);
+    var exp = act.reduce(function (a, m) { return a + m.monthly; }, 0);
+    var paidCount = act.filter(function (m) { return S.deposits[m.id + '_' + S.month]; }).length;
+    var dueCount = act.length - paidCount;
+    var lastM = last && S.members.filter(function (m) { return m.id === last.memberId; })[0];
+    var pct = exp > 0 ? Math.min(100, Math.round(got / exp * 100)) : 0;
+    box.append(
+      h('div', { class: 'hero' },
+        h('span', { class: 'lbl', text: 'সমিতির মোট জমা' }),
+        h('span', { class: 'big num', text: taka(total) }),
+        h('span', { class: 'last', text: last ? 'সর্বশেষ জমা: ' + (lastM ? lastM.name : 'সদস্য') + ' · ' + dateShort(last.at) : 'এখনো কোনো জমা লেখা হয়নি' })
+      ),
+      h('div', { class: 'mini' },
+        h('div', { class: 'stat' },
+          h('span', { class: 'lbl', text: monthLabel(S.month) + ' মাসে জমা' }),
+          h('span', { class: 'val num' }, taka(got), exp > 0 ? h('small', { text: ' / ' + taka(exp) }) : null),
+          h('div', { class: 'bar' }, h('b', { style: 'width:' + pct + '%' }))
+        ),
+        h('div', { class: 'stat' + (dueCount > 0 && S.month <= CUR ? ' warn' : '') },
+          h('span', { class: 'lbl', text: 'এ মাসে বকেয়া' }),
+          h('span', { class: 'val num' }, S.month > CUR ? '—' : fmt(dueCount), S.month > CUR ? null : h('small', { text: ' জন' }))
+        )
+      )
+    );
+  }
+
+  function pillFor(m, d) {
+    if (d) return h('span', { class: 'pill paid num', text: 'জমা · ' + taka(d.amount) + (d.at ? ' · ' + dateShort(d.at) : '') });
+    if (m.start > S.month) return h('span', { class: 'pill', text: 'তখনো যুক্ত হননি' });
+    if (m.active === false) return h('span', { class: 'pill', text: 'বন্ধ' });
+    if (S.month > CUR) return h('span', { class: 'pill', text: 'সময় হয়নি' });
+    return h('span', { class: 'pill due num', text: 'বাকি · ' + taka(m.monthly) });
+  }
+
+  function memberRow(m) {
+    var id = m.id + '_' + S.month;
+    var d = S.deposits[id];
+    var can = S.canEdit && (d || (m.start <= S.month && m.active !== false));
+    var acts = null;
+    if (can) {
+      if (S.editRow === id) {
+        acts = h('div', { class: 'acts' },
+          h('input', { class: 'field amt', id: 'amt-input', type: 'text', inputmode: 'numeric', value: S.editAmt, 'aria-label': 'জমার অঙ্ক',
+            oninput: function (e) { S.editAmt = e.target.value; },
+            onkeydown: function (e) { if (e.key === 'Enter') saveAmount(m, id); } }),
+          h('button', { class: 'btn primary', text: 'সংরক্ষণ', onclick: function () { saveAmount(m, id); } }),
+          h('button', { class: 'btn', text: 'বন্ধ', onclick: function () { S.editRow = null; renderAll(); } })
+        );
+      } else if (d && S.confirm === id) {
+        acts = h('div', { class: 'acts' },
+          h('span', { class: 'hint', text: 'জমার রেকর্ড মুছবেন?' }),
+          h('button', { class: 'btn danger', text: 'হ্যাঁ, মুছুন', onclick: function () { removeDeposit(id); } }),
+          h('button', { class: 'btn', text: 'না', onclick: function () { S.confirm = null; renderAll(); } })
+        );
+      } else if (d) {
+        acts = h('div', { class: 'acts' },
+          h('button', { class: 'btn', text: 'অঙ্ক বদলান', onclick: function () { S.editRow = id; S.editAmt = String(d.amount); S.confirm = null; renderAll(); } }),
+          h('button', { class: 'btn', text: 'বাতিল', onclick: function () { S.confirm = id; S.editRow = null; renderAll(); } })
+        );
+      } else {
+        acts = h('div', { class: 'acts' },
+          h('button', { class: 'btn primary', text: 'জমা নিন ' + taka(m.monthly), onclick: function () { putDeposit(m, id, m.monthly); } }),
+          h('button', { class: 'btn', text: 'অন্য অঙ্ক', onclick: function () { S.editRow = id; S.editAmt = String(m.monthly); S.confirm = null; renderAll(); } })
+        );
+      }
+    }
+    return h('li', { class: 'row' },
+      h('div', { class: 'line1' },
+        h('div', { class: 'who' }, h('span', { class: 'name', text: m.name }), h('span', { class: 'meta num', text: 'মাসিক চাঁদা ' + taka(m.monthly) })),
+        pillFor(m, d)
+      ),
+      acts
+    );
+  }
+
+  function renderMonth() {
+    var sec = $('#month-sec'); sec.replaceChildren();
+    var go = function (k) { S.month = k; S.year = +k.slice(0, 4); S.editRow = null; S.confirm = null; renderAll(); };
+    var nav = h('div', { class: 'nav' },
+      h('button', { class: 'ibtn', id: 'm-prev', 'aria-label': 'আগের মাস', text: '‹', onclick: function () { go(shiftMonth(S.month, -1)); } }),
+      h('span', { class: 'cur', text: monthLabel(S.month) }),
+      h('button', { class: 'ibtn', id: 'm-next', 'aria-label': 'পরের মাস', text: '›', onclick: function () { go(shiftMonth(S.month, 1)); } }),
+      S.month !== CUR ? h('button', { class: 'tbtn', id: 'm-now', text: 'এই মাস', onclick: function () { go(CUR); } }) : null
+    );
+    sec.append(h('div', { class: 'sec-head' }, h('h2', { text: 'মাসের হিসাব' }), nav));
+    if (S.err) {
+      sec.append(h('div', { class: 'empty' }, h('strong', { text: 'হিসাব লোড করা যায়নি' }), S.err));
+      return;
+    }
+    var shown = S.members.filter(function (m) { return m.start <= S.month || S.deposits[m.id + '_' + S.month]; });
+    if (!S.members.length) {
+      sec.append(h('div', { class: 'empty' },
+        h('strong', { text: 'এখনো কোনো সদস্য নেই' }),
+        S.canEdit ? 'নিচের "নতুন সদস্য যোগ করুন" অংশ থেকে প্রথম সদস্যকে যোগ করুন।' : 'কোষাধ্যক্ষ সদস্য যোগ করলে এখানে সবার নাম ও জমার অবস্থা দেখা যাবে।'));
+      return;
+    }
+    if (!shown.length) {
+      sec.append(h('div', { class: 'empty' }, h('strong', { text: 'এই মাসে কেউ যুক্ত ছিলেন না' }), 'আগের বা পরের মাস দেখুন।'));
+      return;
+    }
+    sec.append(h('ul', { class: 'list' }, shown.map(memberRow)));
+  }
+
+  function renderLedger() {
+    var sec = $('#ledger-sec'); sec.replaceChildren();
+    var nav = h('div', { class: 'nav' },
+      h('button', { class: 'ibtn', id: 'y-prev', 'aria-label': 'আগের বছর', text: '‹', onclick: function () { S.year--; renderAll(); } }),
+      h('span', { class: 'cur', text: YF.format(S.year) + ' সাল' }),
+      h('button', { class: 'ibtn', id: 'y-next', 'aria-label': 'পরের বছর', text: '›', onclick: function () { S.year++; renderAll(); } })
+    );
+    sec.append(h('div', { class: 'sec-head' }, h('h2', { text: 'বছরের খাতা' }), nav));
+    if (S.err || !S.members.length) return;
+    var keys = []; for (var i = 0; i < 12; i++) keys.push(ymKey(S.year, i));
+    var head = h('tr', null, h('th', { text: 'সদস্য' }),
+      keys.map(function (k, i) {
+        return h('th', { class: (k === CUR ? 'cur ' : '') + (k === S.month ? 'sel' : '') },
+          h('button', { text: SHORT[i], title: monthLabel(k), onclick: function () { S.month = k; S.editRow = null; S.confirm = null; renderAll(); $('#month-sec').scrollIntoView({ behavior: 'smooth', block: 'start' }); } }));
+      }),
+      h('th', { text: 'মোট' }), h('th', { text: 'বকেয়া মাস' }));
+    var monthSum = keys.map(function () { return 0; });
+    var body = S.members.map(function (m) {
+      var cells = keys.map(function (k, i) {
+        var d = S.deposits[m.id + '_' + k];
+        var cls = k === CUR ? 'cur ' : '';
+        if (d) { monthSum[i] += d.amount; return h('td', { class: cls + 'paid num', text: fmt(d.amount) }); }
+        if (k < m.start || m.active === false) return h('td', { class: cls + 'na', text: '·' });
+        if (k <= CUR) return h('td', { class: cls + 'due', text: 'বাকি' });
+        return h('td', { class: cls + 'na', text: '·' });
+      });
+      var t = memberTotals(m);
+      return h('tr', null,
+        h('td', { title: m.name }, m.name, m.active === false ? h('span', { class: 'tag', text: 'বন্ধ' }) : null),
+        cells,
+        h('td', { class: 'tot num', text: taka(t.total) }),
+        h('td', { class: 'num', text: t.dues ? fmt(t.dues) : '—', style: t.dues ? 'color:var(--due);font-weight:600' : null })
+      );
+    });
+    var yearTotal = monthSum.reduce(function (a, b) { return a + b; }, 0);
+    var foot = h('tr', null, h('td', { text: 'মোট' }),
+      monthSum.map(function (s, i) { return h('td', { class: (keys[i] === CUR ? 'cur ' : '') + 'num', text: s ? fmt(s) : '—' }); }),
+      h('td', { class: 'num', text: taka(yearTotal) }), h('td', { text: '' }));
+    sec.append(
+      h('div', { class: 'scroll' }, h('table', null, h('thead', null, head), h('tbody', null, body), h('tfoot', null, foot))),
+      h('p', { class: 'hint', text: 'মাসের নামে চাপ দিলে ওপরে সেই মাসের হিসাব খোলে। টেবিলটি ডানে-বামে সরানো যায়।' })
+    );
+  }
+
+  function renderAdmin() {
+    if (!S.canEdit) return;
+    var box = $('#member-list'); box.replaceChildren();
+    if (!S.members.length) { box.append(h('p', { class: 'hint', text: 'এখনো কাউকে যোগ করা হয়নি।' })); return; }
+    S.members.forEach(function (m) {
+      if (S.em && S.em.id === m.id) {
+        box.append(h('div', { class: 'mrow' },
+          h('div', { class: 'form' },
+            h('label', null, 'নাম', h('input', { class: 'field', id: 'em-name', type: 'text', value: S.em.name, maxlength: '60', oninput: function (e) { S.em.name = e.target.value; } })),
+            h('label', null, 'মাসিক চাঁদা (৳)', h('input', { class: 'field amt', id: 'em-amt', type: 'text', inputmode: 'numeric', value: S.em.monthly, oninput: function (e) { S.em.monthly = e.target.value; } })),
+            h('label', null, 'শুরুর মাস', h('input', { class: 'field', id: 'em-start', type: 'month', value: S.em.start, oninput: function (e) { S.em.start = e.target.value; } }))
+          ),
+          h('div', { class: 'acts' },
+            h('button', { class: 'btn primary', text: 'সংরক্ষণ', onclick: function () { saveMember(m); } }),
+            h('button', { class: 'btn', text: 'বন্ধ', onclick: function () { S.em = null; renderAll(); } }))
+        ));
+      } else {
+        box.append(h('div', { class: 'mrow' + (m.active === false ? ' off' : '') },
+          h('div', { class: 'line1', style: 'display:flex;flex-wrap:wrap;justify-content:space-between;gap:6px 12px;align-items:center' },
+            h('div', { class: 'who' }, h('span', { class: 'name', text: m.name }), h('span', { class: 'meta num', text: 'মাসিক ' + taka(m.monthly) + ' · শুরু ' + monthLabel(m.start) })),
+            h('div', { class: 'acts' },
+              h('button', { class: 'btn', text: 'সম্পাদনা', onclick: function () { S.em = { id: m.id, name: m.name, monthly: String(m.monthly), start: m.start }; renderAll(); } }),
+              h('button', { class: 'btn', text: m.active === false ? 'আবার চালু করুন' : 'বন্ধ করুন', onclick: function () { toggleActive(m); } })
+            ))
+        ));
+      }
+    });
+  }
+
+  function renderAll() {
+    var ae = document.activeElement, fid = null, ss = null, se = null;
+    if (ae && ae.id && ae.closest && ae.closest('main')) {
+      fid = ae.id;
+      try { ss = ae.selectionStart; se = ae.selectionEnd; } catch (e) {}
+    }
+    renderHead(); renderSummary(); renderMonth(); renderLedger(); renderAdmin();
+    if (fid) {
+      var el = document.getElementById(fid);
+      if (el && el !== document.activeElement) {
+        el.focus();
+        try { if (ss != null) el.setSelectionRange(ss, se); } catch (e) {}
+      }
+    }
+  }
+  var raf = 0;
+  function schedule() { if (raf) return; raf = requestAnimationFrame(function () { raf = 0; renderAll(); }); }
+
+  var toastTimer = 0;
+  function toast(msg) {
+    var s = $('#toast span'); s.textContent = msg; s.hidden = false;
+    clearTimeout(toastTimer); toastTimer = setTimeout(function () { s.hidden = true; }, 3200);
+  }
+  function errText(e) {
+    var c = e && e.code || '';
+    if (c === 'permission-denied') return 'অনুমতি নেই। কোষাধ্যক্ষের ইমেইল দিয়ে লগইন করা আছে কিনা দেখুন।';
+    if (c === 'unavailable') return 'নেট নেই বা সংযোগ দুর্বল। পরে আবার চেষ্টা করুন।';
+    return 'সংরক্ষণ করা যায়নি, আবার চেষ্টা করুন।';
+  }
+  function run(fn, ok) {
+    return Promise.resolve().then(fn).then(function () { if (ok) toast(ok); }, function (e) { toast(errText(e)); });
+  }
+
+  function putDeposit(m, id, amount) {
+    return run(function () {
+      return db.doc('deposits/' + id).set({ memberId: m.id, month: S.month, amount: amount, at: Date.now() });
+    }, m.name + ' – জমা লেখা হয়েছে');
+  }
+  function saveAmount(m, id) {
+    var n = toNum(S.editAmt);
+    if (!(n > 0)) { toast('সঠিক অঙ্ক লিখুন।'); return; }
+    S.editRow = null;
+    putDeposit(m, id, n);
+    renderAll();
+  }
+  function removeDeposit(id) {
+    S.confirm = null; renderAll();
+    run(function () { return db.doc('deposits/' + id).delete(); }, 'জমার রেকর্ড মুছে গেছে');
+  }
+  function toggleActive(m) {
+    run(function () { return db.doc('members/' + m.id).update({ active: m.active === false }); }, m.active === false ? 'সদস্য আবার চালু হয়েছে' : 'সদস্য বন্ধ করা হয়েছে');
+  }
+  function saveMember(m) {
+    var name = S.em.name.trim(), amt = toNum(S.em.monthly), start = S.em.start;
+    if (!name || !(amt > 0) || !/^\d{4}-\d{2}$/.test(start)) { toast('নাম, চাঁদার অঙ্ক ও শুরুর মাস ঠিকভাবে লিখুন।'); return; }
+    S.em = null; renderAll();
+    run(function () { return db.doc('members/' + m.id).update({ name: name, monthly: amt, start: start }); }, 'সদস্যের তথ্য বদলানো হয়েছে');
+  }
+
+  $('#add-form').addEventListener('submit', function (e) {
+    e.preventDefault();
+    if (!db || !S.canEdit) return;
+    var name = $('#nm-name').value.trim(), amt = toNum($('#nm-amt').value), start = $('#nm-start').value;
+    if (!name || !(amt > 0) || !/^\d{4}-\d{2}$/.test(start)) { toast('নাম, চাঁদার অঙ্ক ও শুরুর মাস ঠিকভাবে লিখুন।'); return; }
+    var btn = $('#nm-go'); btn.disabled = true;
+    run(function () {
+      return db.collection('members').add({ name: name, monthly: amt, start: start, active: true, order: Date.now() });
+    }, name + ' যোগ হয়েছে').then(function () {
+      btn.disabled = false; $('#nm-name').value = ''; $('#nm-name').focus();
+    });
+  });
+  $('#name-form').addEventListener('submit', function (e) {
+    e.preventDefault();
+    if (!db || !S.canEdit) return;
+    var v = $('#set-name').value.trim();
+    if (!v) { toast('সমিতির নাম লিখুন।'); return; }
+    run(function () { return db.doc('meta/settings').set({ name: v }); }, 'নাম সংরক্ষণ হয়েছে');
+  });
+  $('#nm-start').value = CUR;
+
+  /* লগইন / লগআউট */
+  $('#auth-btn').addEventListener('click', function () {
+    if (!auth) return;
+    if (S.canEdit) { auth.signOut(); return; }
+    S.showLogin = !S.showLogin; renderAll();
+    if (S.showLogin) $('#li-email').focus();
+  });
+  $('#login-form').addEventListener('submit', function (e) {
+    e.preventDefault();
+    if (!auth) return;
+    var btn = $('#li-go'); btn.disabled = true;
+    auth.signInWithEmailAndPassword($('#li-email').value.trim(), $('#li-pass').value).then(function () {
+      $('#li-pass').value = ''; S.showLogin = false; toast('লগইন হয়েছে');
+    }, function (err) {
+      var c = err && err.code || '';
+      toast(c.indexOf('network') >= 0 ? 'নেট সংযোগ নেই।' : c.indexOf('too-many') >= 0 ? 'অনেকবার ভুল হয়েছে, একটু পরে চেষ্টা করুন।' : 'ইমেইল বা পাসওয়ার্ড ভুল।');
+    }).then(function () { btn.disabled = false; });
+  });
+
+  window.addEventListener('online', function () { S.online = true; schedule(); });
+  window.addEventListener('offline', function () { S.online = false; schedule(); });
+
+  function onErr() { S.err = 'সংযোগে সমস্যা হচ্ছে। নেট আছে কিনা দেখে অ্যাপটি আবার খুলুন।'; renderAll(); }
+
+  function start() {
+    var cfg = window.FIREBASE_CONFIG;
+    if (!window.firebase || !cfg || !cfg.apiKey || String(cfg.apiKey).indexOf('PASTE') === 0) {
+      S.err = !window.firebase ? 'ইন্টারনেট সংযোগ নেই, তাই অ্যাপ চালু হয়নি।' : 'firebase-config.js ফাইলে Firebase-এর তথ্য এখনো বসানো হয়নি।';
+      renderAll(); return;
+    }
+    try {
+      firebase.initializeApp(cfg);
+      db = firebase.firestore();
+      auth = firebase.auth();
+      try { db.enablePersistence({ synchronizeTabs: true }).catch(function () {}); } catch (e) {}
+    } catch (e) { S.err = 'Firebase চালু করা যায়নি। firebase-config.js ফাইলের তথ্য ঠিক আছে কিনা দেখুন।'; renderAll(); return; }
+
+    auth.onAuthStateChanged(function (u) { S.canEdit = !!u; if (u) S.showLogin = false; schedule(); });
+
+    db.collection('members').onSnapshot(function (snap) {
+      S.members = snap.docs.map(function (d) {
+        var x = d.data() || {};
+        return { id: d.id, name: String(x.name || ''), monthly: Number(x.monthly) || 0, start: String(x.start || CUR), active: x.active !== false, order: Number(x.order) || 0 };
+      }).sort(function (a, b) { return a.order - b.order; });
+      S.ready.m = true; S.err = ''; schedule();
+    }, onErr);
+    db.collection('deposits').onSnapshot(function (snap) {
+      var map = {};
+      snap.docs.forEach(function (d) {
+        var x = d.data() || {};
+        map[d.id] = { memberId: String(x.memberId || ''), month: String(x.month || ''), amount: Number(x.amount) || 0, at: Number(x.at) || 0 };
+      });
+      S.deposits = map; S.ready.d = true; S.err = ''; schedule();
+    }, onErr);
+    db.doc('meta/settings').onSnapshot(function (snap) {
+      var x = snap.exists ? snap.data() : null;
+      S.name = x && x.name ? String(x.name) : 'আমাদের সমিতি'; schedule();
+    }, onErr);
+  }
+
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function () { navigator.serviceWorker.register('sw.js').catch(function () {}); });
+  }
+  renderAll();
+  start();
+})();
+</script>
+</body>
+</html>

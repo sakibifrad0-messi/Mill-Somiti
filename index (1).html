@@ -1,0 +1,883 @@
+<!doctype html>
+<html lang="bn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#064A3F">
+<meta name="color-scheme" content="light dark">
+<title>সমিতির হিসাব</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anek+Bangla:wght@500;700;800&family=Hind+Siliguri:wght@400;500;600&display=swap">
+<style>
+/* Layout: sticky top bar (society name + switcher), one page at a time in the middle, bottom tab bar. */
+:root {
+  --bg: #EDF1F0;
+  --surface: #FFFFFF;
+  --surface-2: #F5F8F7;
+  --ink: #0F2420;
+  --muted: #5B6F69;
+  --line: #D9E2DF;
+  --accent: #0B6B5C;
+  --accent-ink: #FFFFFF;
+  --accent-soft: #DCEFE9;
+  --hero-a: #0E7A68;
+  --hero-b: #064A3F;
+  --hero-ink: #FFFFFF;
+  --gold: #B8892B;
+  --ok: #17794B;
+  --ok-soft: #DDF1E5;
+  --due: #A94A17;
+  --due-soft: #F8E6DA;
+  --shadow: 0 1px 2px rgba(15,36,32,.06), 0 6px 18px rgba(15,36,32,.06);
+  --font-display: "Anek Bangla", "Hind Siliguri", "Noto Sans Bengali", system-ui, sans-serif;
+  --font-body: "Hind Siliguri", "Noto Sans Bengali", system-ui, sans-serif;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0A1311; --surface: #121F1C; --surface-2: #0F1A18; --ink: #E6EFEC; --muted: #98ADA6; --line: #23382F;
+    --accent: #5BC9B6; --accent-ink: #06201A; --accent-soft: #17332E;
+    --hero-a: #2E8F7E; --hero-b: #164F45; --hero-ink: #F2FBF8;
+    --gold: #E2B867;
+    --ok: #6BD39B; --ok-soft: #163626; --due: #F0A06B; --due-soft: #3A2519;
+    --shadow: 0 1px 2px rgba(0,0,0,.4), 0 8px 22px rgba(0,0,0,.28);
+    color-scheme: dark;
+  }
+}
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html { background: var(--bg); }
+body {
+  margin: 0; background: var(--bg); color: var(--ink);
+  font-family: var(--font-body); font-size: 16px; line-height: 1.55;
+  padding-bottom: calc(92px + env(safe-area-inset-bottom, 0px));
+}
+h1, h2, h3, p { margin: 0; }
+h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; }
+button, input, select { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.num { font-variant-numeric: tabular-nums; }
+[hidden] { display: none !important; }
+.wrap { max-width: 880px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+
+/* top bar */
+.appbar { position: sticky; top: 0; z-index: 20; background: var(--bg); padding-top: env(safe-area-inset-top, 0px); border-bottom: 1px solid transparent; }
+.appbar .wrap { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding-top: 12px; padding-bottom: 10px; }
+.brand { min-width: 0; display: flex; flex-direction: column; }
+.brand small { color: var(--muted); font-size: 13px; line-height: 1.2; }
+.brand h1 { font-size: 22px; font-weight: 800; line-height: 1.25; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bar-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+.soc-select { max-width: 150px; padding: 6px 10px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); font-size: 14px; }
+.live { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--muted); padding: 4px 10px; border: 1px solid var(--line); border-radius: 99px; background: var(--surface); white-space: nowrap; }
+.live i { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); }
+.live.on i { background: var(--ok); box-shadow: 0 0 0 3px var(--ok-soft); }
+
+/* views */
+#view { display: flex; flex-direction: column; gap: 22px; padding-top: 8px; padding-bottom: 8px; }
+@media (prefers-reduced-motion: no-preference) {
+  #view > * { animation: rise .28s ease both; }
+  @keyframes rise { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+  .bar b { transition: width .5s ease; }
+  .ring circle.v { transition: stroke-dashoffset .6s ease; }
+}
+.page-title { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; }
+.page-title h2 { font-size: 24px; font-weight: 800; line-height: 1.2; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; box-shadow: var(--shadow); }
+.pad { padding: 16px; }
+.sec-h { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 10px; }
+.sec-h h3 { font-size: 18px; font-weight: 700; }
+.link { background: none; border: 0; color: var(--accent); font-weight: 600; font-size: 14px; padding: 4px 0; }
+
+/* hero */
+.hero { border-radius: 20px; padding: 22px 20px; color: var(--hero-ink); background: linear-gradient(145deg, var(--hero-a), var(--hero-b)); box-shadow: var(--shadow); display: flex; flex-direction: column; gap: 6px; position: relative; overflow: hidden; }
+.hero::after { content: ""; position: absolute; right: -40px; top: -40px; width: 160px; height: 160px; border-radius: 50%; border: 22px solid rgba(255,255,255,.07); }
+.hero .lbl { font-size: 15px; opacity: .85; }
+.hero .big { font-family: var(--font-display); font-weight: 800; font-size: 46px; line-height: 1.1; overflow-wrap: anywhere; }
+.hero .last { font-size: 14px; opacity: .85; }
+.hero .gold { display: block; width: 44px; height: 3px; border-radius: 3px; background: var(--gold); margin: 6px 0 2px; }
+.grid3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
+.stat { padding: 14px 16px; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.stat .lbl { font-size: 14px; color: var(--muted); }
+.stat .val { font-family: var(--font-display); font-weight: 700; font-size: 24px; line-height: 1.25; overflow-wrap: anywhere; }
+.stat .val small { font-weight: 500; font-size: 14px; color: var(--muted); }
+.stat.warn .val { color: var(--due); }
+.ringbox { display: flex; align-items: center; gap: 14px; padding: 14px 16px; }
+.ring { width: 64px; height: 64px; flex-shrink: 0; position: relative; }
+.ring svg { width: 64px; height: 64px; transform: rotate(-90deg); }
+.ring circle { fill: none; stroke-width: 7; }
+.ring circle.t { stroke: var(--accent-soft); }
+.ring circle.v { stroke: var(--accent); stroke-linecap: round; }
+.ring span { position: absolute; inset: 0; display: grid; place-items: center; font-weight: 700; font-size: 14px; }
+.bar { height: 6px; border-radius: 99px; background: var(--accent-soft); overflow: hidden; margin-top: 4px; }
+.bar b { display: block; height: 100%; background: var(--accent); border-radius: 99px; }
+
+/* lists */
+.list { list-style: none; margin: 0; padding: 0; overflow: hidden; }
+.row { padding: 12px 16px; display: grid; gap: 10px; border-top: 1px solid var(--line); }
+.row:first-child { border-top: 0; }
+.line1 { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 12px; }
+.who { min-width: 0; display: flex; align-items: center; gap: 12px; }
+.avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--accent-soft); color: var(--accent); display: grid; place-items: center; font-family: var(--font-display); font-weight: 700; font-size: 17px; flex-shrink: 0; }
+.who .txt { min-width: 0; display: flex; flex-direction: column; }
+.who .name { font-weight: 600; overflow-wrap: anywhere; }
+.who .meta { font-size: 13px; color: var(--muted); }
+.pill { display: inline-flex; align-items: center; gap: 6px; padding: 3px 12px; border-radius: 99px; font-size: 14px; font-weight: 500; background: var(--surface-2); color: var(--muted); white-space: nowrap; border: 1px solid var(--line); }
+.pill.paid { background: var(--ok-soft); color: var(--ok); border-color: transparent; }
+.pill.due { background: var(--due-soft); color: var(--due); border-color: transparent; }
+.acts { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.btn { padding: 8px 14px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); font-size: 14px; font-weight: 500; }
+.btn:hover { background: var(--accent-soft); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.btn.primary:hover { filter: brightness(1.08); }
+.btn.danger { color: var(--due); border-color: var(--due); background: transparent; }
+.btn.danger.solid { background: var(--due); color: var(--bg); border-color: var(--due); }
+.btn:disabled { opacity: .5; cursor: default; filter: none; }
+.field { padding: 9px 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface-2); min-width: 0; }
+.field.amt { width: 110px; }
+.empty { padding: 28px 18px; text-align: center; color: var(--muted); background: var(--surface); border: 1px dashed var(--line); border-radius: 16px; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.empty strong { display: block; color: var(--ink); font-family: var(--font-display); font-size: 18px; }
+.hint { font-size: 13px; color: var(--muted); }
+.nav { display: inline-flex; align-items: center; gap: 6px; }
+.nav .cur { min-width: 118px; text-align: center; font-weight: 600; }
+.ibtn { width: 38px; height: 38px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); font-size: 20px; line-height: 1; }
+.ibtn:hover { background: var(--accent-soft); }
+.tbtn { padding: 7px 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); font-size: 14px; }
+
+/* ledger table */
+.scroll { overflow-x: auto; }
+table { border-collapse: separate; border-spacing: 0; width: 100%; min-width: 880px; font-size: 14px; }
+th, td { padding: 9px 8px; text-align: center; border-bottom: 1px solid var(--line); white-space: nowrap; }
+tbody tr:last-child td, tfoot td { border-bottom: 0; }
+thead th { font-weight: 600; color: var(--muted); background: var(--surface); }
+th button { background: none; border: 0; padding: 0; color: inherit; font-weight: inherit; }
+th:first-child, td:first-child { position: sticky; left: 0; text-align: left; background: var(--surface); z-index: 1; padding-left: 14px; min-width: 112px; max-width: 150px; overflow: hidden; text-overflow: ellipsis; font-weight: 600; }
+td.paid { color: var(--ok); font-weight: 500; }
+td.due { color: var(--due); background: var(--due-soft); font-size: 12px; }
+td.na { color: var(--line); }
+th.cur, td.cur { box-shadow: inset 0 0 0 9999px color-mix(in srgb, var(--accent) 7%, transparent); }
+td.tot { font-weight: 600; }
+tfoot td { font-weight: 600; border-top: 2px solid var(--line); }
+.tag { font-size: 11px; font-weight: 500; color: var(--muted); border: 1px solid var(--line); border-radius: 6px; padding: 0 5px; margin-left: 6px; }
+
+/* forms */
+.form { display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end; }
+.form label { display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: var(--muted); min-width: 0; }
+.form .field { color: var(--ink); }
+.check { flex-direction: row !important; align-items: center; gap: 8px !important; font-size: 14px !important; color: var(--ink) !important; }
+.check input { width: 18px; height: 18px; accent-color: var(--accent); }
+.stack { display: flex; flex-direction: column; gap: 14px; }
+.danger-zone { border-color: color-mix(in srgb, var(--due) 45%, var(--line)); }
+.danger-zone h3 { color: var(--due); }
+.confirm { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.soc { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; padding: 10px 0; border-top: 1px solid var(--line); }
+.soc:first-of-type { border-top: 0; }
+
+/* tabs */
+.tabs { position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; background: var(--surface); border-top: 1px solid var(--line); padding-bottom: env(safe-area-inset-bottom, 0px); box-shadow: 0 -6px 20px rgba(15,36,32,.06); }
+.tabs .in { max-width: 880px; margin: 0 auto; display: grid; grid-template-columns: repeat(5, 1fr); padding-left: env(safe-area-inset-left, 0px); padding-right: env(safe-area-inset-right, 0px); }
+.tab { background: none; border: 0; padding: 8px 2px 8px; display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: 12px; color: var(--muted); position: relative; }
+.tab svg { width: 24px; height: 24px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.tab.on { color: var(--accent); font-weight: 600; }
+.tab.on::before { content: ""; position: absolute; top: 0; left: 28%; right: 28%; height: 3px; border-radius: 0 0 3px 3px; background: var(--gold); }
+
+#toast { position: fixed; left: 0; right: 0; bottom: calc(76px + env(safe-area-inset-bottom, 0px)); z-index: 40; display: flex; justify-content: center; padding: 0 16px; pointer-events: none; }
+#toast span { background: var(--ink); color: var(--bg); padding: 9px 16px; border-radius: 10px; font-size: 15px; box-shadow: 0 6px 20px rgba(0,0,0,.25); max-width: 100%; }
+
+@media (max-width: 480px) {
+  .hero .big { font-size: 40px; }
+  .brand h1 { font-size: 20px; }
+  .soc-select { max-width: 120px; }
+}
+</style>
+</head>
+<body>
+<header class="appbar">
+  <div class="wrap">
+    <div class="brand"><small>মাসিক জমার হিসাব</small><h1 id="society-name">সমিতির হিসাব</h1></div>
+    <div class="bar-right">
+      <select class="soc-select" id="soc-select" aria-label="সমিতি বদলান" hidden></select>
+      <span class="live" id="live"><i></i><span id="live-text">সংযোগ হচ্ছে…</span></span>
+    </div>
+  </div>
+</header>
+<main class="wrap" id="view"></main>
+<nav class="tabs" aria-label="প্রধান মেনু"><div class="in" id="tabs"></div></nav>
+<div id="toast" role="status" aria-live="polite"><span hidden></span></div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script>
+(function () {
+  var $ = function (s) { return document.querySelector(s); };
+  var BN = new Intl.NumberFormat('bn-BD');
+  var YF = new Intl.NumberFormat('bn-BD', { useGrouping: false });
+  var fmt = function (n) { return BN.format(Math.round(Number(n) || 0)); };
+  var taka = function (n) { return '৳' + fmt(n); };
+  var MONTHS = ['জানুয়ারি','ফেব্রুয়ারি','মার্চ','এপ্রিল','মে','জুন','জুলাই','আগস্ট','সেপ্টেম্বর','অক্টোবর','নভেম্বর','ডিসেম্বর'];
+  var SHORT = ['জানু','ফেব্রু','মার্চ','এপ্রি','মে','জুন','জুলাই','আগ','সেপ্টে','অক্টো','নভে','ডিসে'];
+  var pad = function (n) { return String(n).padStart(2, '0'); };
+  var ymKey = function (y, m0) { return y + '-' + pad(m0 + 1); };
+  var now = new Date();
+  var CUR = ymKey(now.getFullYear(), now.getMonth());
+  var monthLabel = function (k) { var p = k.split('-'); return MONTHS[+p[1] - 1] + ' ' + YF.format(+p[0]); };
+  var shiftMonth = function (k, d) { var p = k.split('-'); var t = (+p[0]) * 12 + (+p[1] - 1) + d; return ymKey(Math.floor(t / 12), t % 12); };
+  var dateShort = function (ts) { try { return new Date(ts).toLocaleDateString('bn-BD', { day: 'numeric', month: 'short' }); } catch (e) { return ''; } };
+  var toNum = function (s) {
+    var t = String(s).replace(/[০-৯]/g, function (c) { return '০১২৩৪৫৬৭৮৯'.indexOf(c); }).replace(/[,\s৳]/g, '');
+    var n = Number(t);
+    return t !== '' && isFinite(n) ? n : NaN;
+  };
+  var lsGet = function (k) { try { return localStorage.getItem(k); } catch (e) { return null; } };
+  var lsSet = function (k, v) { try { localStorage.setItem(k, v); } catch (e) {} };
+
+  function h(tag, props) {
+    var el = document.createElement(tag);
+    if (props) Object.keys(props).forEach(function (k) {
+      var v = props[k];
+      if (v == null || v === false) return;
+      if (k === 'class') el.className = v;
+      else if (k === 'text') el.textContent = v;
+      else if (k === 'value') el.value = v;
+      else if (k.indexOf('on') === 0) el.addEventListener(k.slice(2), v);
+      else if (v === true) el.setAttribute(k, '');
+      else el.setAttribute(k, v);
+    });
+    for (var i = 2; i < arguments.length; i++) {
+      var kids = [].concat(arguments[i]);
+      for (var j = 0; j < kids.length; j++) {
+        var c = kids[j];
+        if (c == null || c === false) continue;
+        el.append(c.nodeType ? c : document.createTextNode(c));
+      }
+    }
+    return el;
+  }
+
+  var ICONS = {
+    home: '<svg viewBox="0 0 24 24"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/></svg>',
+    cal: '<svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>',
+    grid: '<svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M3 9h18M3 15h18M9 3v18M15 3v18"/></svg>',
+    users: '<svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"/><path d="M16 4.6a3.5 3.5 0 010 6.8M18 14.4c2.2.7 3.5 2.6 3.5 5.6"/></svg>',
+    gear: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 00.3 1.8l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.7 1.7 0 00-1.8-.3 1.7 1.7 0 00-1 1.5V21a2 2 0 11-4 0v-.1a1.7 1.7 0 00-1.1-1.5 1.7 1.7 0 00-1.8.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.7 1.7 0 00.3-1.8 1.7 1.7 0 00-1.5-1H3a2 2 0 110-4h.1a1.7 1.7 0 001.5-1.1 1.7 1.7 0 00-.3-1.8l-.1-.1a2 2 0 112.8-2.8l.1.1a1.7 1.7 0 001.8.3H9a1.7 1.7 0 001-1.5V3a2 2 0 114 0v.1a1.7 1.7 0 001 1.5 1.7 1.7 0 001.8-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.7 1.7 0 00-.3 1.8V9a1.7 1.7 0 001.5 1H21a2 2 0 110 4h-.1a1.7 1.7 0 00-1.5 1z"/></svg>'
+  };
+  var TABS = [['home', 'হোম', 'home'], ['month', 'মাস', 'cal'], ['ledger', 'বছর', 'grid'], ['members', 'সদস্য', 'users'], ['settings', 'সেটিংস', 'gear']];
+  var PAGES = TABS.map(function (t) { return t[0]; });
+
+  var S = {
+    societies: [], sid: null, members: [], deposits: {},
+    month: CUR, year: now.getFullYear(), page: 'home',
+    canEdit: false, ready: { s: false, m: false, d: false }, err: '', online: navigator.onLine,
+    editRow: null, editAmt: '', confirm: null, em: null, showAdd: false,
+    drafts: {}, newImport: false, legacy: false, busy: false
+  };
+  var db = null, auth = null, unsubs = { m: null, d: null };
+
+  /* ---------- derived ---------- */
+  function curSociety() { return S.societies.filter(function (s) { return s.id === S.sid; })[0] || null; }
+  function activeFor(month) { return S.members.filter(function (m) { return m.active !== false && m.start <= month; }); }
+  function stats(month) {
+    var act = activeFor(month), exp = 0, paidN = 0, due = [], got = 0;
+    act.forEach(function (m) {
+      exp += m.monthly;
+      if (S.deposits[m.id + '_' + month]) paidN++; else due.push(m);
+    });
+    Object.keys(S.deposits).forEach(function (k) { if (S.deposits[k].month === month) got += S.deposits[k].amount; });
+    return { act: act, exp: exp, got: got, paidN: paidN, due: due };
+  }
+  function memberTotals(m) {
+    var total = 0, paid = {};
+    Object.keys(S.deposits).forEach(function (k) {
+      var d = S.deposits[k];
+      if (d.memberId === m.id) { total += d.amount; paid[d.month] = true; }
+    });
+    var dues = 0;
+    if (m.active !== false) {
+      var k = m.start < '2000-01' ? '2000-01' : m.start, guard = 0;
+      while (k <= CUR && guard++ < 600) { if (!paid[k]) dues++; k = shiftMonth(k, 1); }
+    }
+    return { total: total, dues: dues };
+  }
+  function allTotal() { var t = 0; Object.keys(S.deposits).forEach(function (k) { t += S.deposits[k].amount; }); return t; }
+  function lastDeposit() {
+    var last = null;
+    Object.keys(S.deposits).forEach(function (k) { var d = S.deposits[k]; if (!last || (d.at || 0) > (last.at || 0)) last = d; });
+    return last;
+  }
+  function memberById(id) { return S.members.filter(function (m) { return m.id === id; })[0]; }
+  function initial(name) { var a = Array.from(String(name).trim()); return a.length ? a[0] : '?'; }
+
+  /* ---------- draft inputs (keep typing across live re-renders) ---------- */
+  function keepInput(id, props, def) {
+    var val = S.drafts[id] != null ? S.drafts[id] : (def == null ? '' : def);
+    props = Object.assign({ class: 'field', id: id, value: val, oninput: function (e) { S.drafts[id] = e.target.value; } }, props);
+    return h('input', props);
+  }
+
+  /* ---------- pages ---------- */
+  function noSocietyCard() {
+    return h('div', { class: 'empty' },
+      h('strong', { text: 'এখনো কোনো সমিতি নেই' }),
+      S.canEdit ? 'সেটিংস পেজ থেকে প্রথম সমিতি বানান।' : 'কোষাধ্যক্ষ সমিতি বানালে এখানে হিসাব দেখা যাবে।',
+      S.canEdit ? h('button', { class: 'btn primary', text: 'সমিতি বানান', onclick: function () { go('settings'); } }) : null
+    );
+  }
+  function errCard() { return h('div', { class: 'empty' }, h('strong', { text: 'হিসাব লোড করা যায়নি' }), S.err); }
+
+  function ring(pct) {
+    var C = 2 * Math.PI * 26, off = C * (1 - Math.min(100, pct) / 100);
+    var d = h('div', { class: 'ring' });
+    d.innerHTML = '<svg viewBox="0 0 64 64"><circle class="t" cx="32" cy="32" r="26"/><circle class="v" cx="32" cy="32" r="26" stroke-dasharray="' + C.toFixed(2) + '" stroke-dashoffset="' + off.toFixed(2) + '"/></svg>';
+    d.append(h('span', { class: 'num', text: YF.format(Math.round(pct)) + '%' }));
+    return d;
+  }
+
+  function viewHome() {
+    var f = document.createDocumentFragment();
+    if (S.err) { f.append(errCard()); return f; }
+    if (!S.sid) { f.append(noSocietyCard()); return f; }
+    var st = stats(CUR), last = lastDeposit(), lastM = last && memberById(last.memberId);
+    var pct = st.exp > 0 ? st.got / st.exp * 100 : 0;
+    f.append(h('div', { class: 'hero' },
+      h('span', { class: 'lbl', text: 'সমিতির মোট জমা' }),
+      h('span', { class: 'big num', text: taka(allTotal()) }),
+      h('span', { class: 'gold' }),
+      h('span', { class: 'last', text: last ? 'সর্বশেষ জমা: ' + (lastM ? lastM.name : 'সদস্য') + ' · ' + dateShort(last.at) : 'এখনো কোনো জমা লেখা হয়নি' })
+    ));
+    f.append(h('div', { class: 'grid3' },
+      h('div', { class: 'card ringbox' }, ring(pct),
+        h('div', { class: 'stat', style: 'padding:0' },
+          h('span', { class: 'lbl', text: monthLabel(CUR) + ' মাসে জমা' }),
+          h('span', { class: 'val num' }, taka(st.got), st.exp > 0 ? h('small', { text: ' / ' + taka(st.exp) }) : null))),
+      h('div', { class: 'card stat' + (st.due.length ? ' warn' : '') },
+        h('span', { class: 'lbl', text: 'এ মাসে বকেয়া' }),
+        h('span', { class: 'val num' }, fmt(st.due.length), h('small', { text: ' জন' }))),
+      h('div', { class: 'card stat' },
+        h('span', { class: 'lbl', text: 'চালু সদস্য' }),
+        h('span', { class: 'val num' }, fmt(st.act.length), h('small', { text: ' জন' })))
+    ));
+    var dueBox = h('div', null, h('div', { class: 'sec-h' }, h('h3', { text: 'এ মাসের বকেয়া' }),
+      st.due.length > 6 ? h('button', { class: 'link', text: 'সব দেখুন', onclick: function () { S.month = CUR; go('month'); } }) : null));
+    if (!S.members.length) dueBox.append(h('div', { class: 'empty' }, 'সদস্য যোগ করলে এখানে বকেয়ার তালিকা আসবে।'));
+    else if (!st.due.length) dueBox.append(h('div', { class: 'empty' }, h('strong', { text: 'সবার জমা হয়ে গেছে' }), monthLabel(CUR) + ' মাসে কারো বকেয়া নেই।'));
+    else dueBox.append(h('ul', { class: 'list card' }, st.due.slice(0, 6).map(function (m) {
+      return h('li', { class: 'row' }, h('div', { class: 'line1' },
+        h('div', { class: 'who' }, h('span', { class: 'avatar', text: initial(m.name) }), h('div', { class: 'txt' }, h('span', { class: 'name', text: m.name }))),
+        h('span', { class: 'pill due num', text: 'বাকি · ' + taka(m.monthly) })));
+    })));
+    f.append(dueBox);
+    var rec = Object.keys(S.deposits).map(function (k) { return S.deposits[k]; }).sort(function (a, b) { return (b.at || 0) - (a.at || 0); }).slice(0, 5);
+    if (rec.length) {
+      f.append(h('div', null, h('div', { class: 'sec-h' }, h('h3', { text: 'সাম্প্রতিক জমা' })),
+        h('ul', { class: 'list card' }, rec.map(function (d) {
+          var m = memberById(d.memberId);
+          return h('li', { class: 'row' }, h('div', { class: 'line1' },
+            h('div', { class: 'who' }, h('span', { class: 'avatar', text: initial(m ? m.name : '?') }),
+              h('div', { class: 'txt' }, h('span', { class: 'name', text: m ? m.name : 'সদস্য' }), h('span', { class: 'meta', text: monthLabel(d.month) + ' · ' + dateShort(d.at) }))),
+            h('span', { class: 'pill paid num', text: taka(d.amount) })));
+        }))));
+    }
+    return f;
+  }
+
+  function pillFor(m, d) {
+    if (d) return h('span', { class: 'pill paid num', text: 'জমা · ' + taka(d.amount) + (d.at ? ' · ' + dateShort(d.at) : '') });
+    if (m.start > S.month) return h('span', { class: 'pill', text: 'তখনো যুক্ত হননি' });
+    if (m.active === false) return h('span', { class: 'pill', text: 'বন্ধ' });
+    if (S.month > CUR) return h('span', { class: 'pill', text: 'সময় হয়নি' });
+    return h('span', { class: 'pill due num', text: 'বাকি · ' + taka(m.monthly) });
+  }
+
+  function depositRow(m) {
+    var id = m.id + '_' + S.month, d = S.deposits[id];
+    var can = S.canEdit && (d || (m.start <= S.month && m.active !== false));
+    var acts = null;
+    if (can) {
+      if (S.editRow === id) {
+        acts = h('div', { class: 'acts' },
+          h('input', { class: 'field amt', id: 'amt-input', type: 'text', inputmode: 'numeric', value: S.editAmt, 'aria-label': 'জমার অঙ্ক',
+            oninput: function (e) { S.editAmt = e.target.value; },
+            onkeydown: function (e) { if (e.key === 'Enter') saveAmount(m, id); } }),
+          h('button', { class: 'btn primary', text: 'সংরক্ষণ', onclick: function () { saveAmount(m, id); } }),
+          h('button', { class: 'btn', text: 'বন্ধ', onclick: function () { S.editRow = null; renderAll(); } }));
+      } else if (d && S.confirm === 'dep:' + id) {
+        acts = h('div', { class: 'confirm' }, h('span', { class: 'hint', text: 'জমার রেকর্ড মুছবেন?' }),
+          h('button', { class: 'btn danger solid', text: 'হ্যাঁ, মুছুন', onclick: function () { removeDeposit(id); } }),
+          h('button', { class: 'btn', text: 'না', onclick: function () { S.confirm = null; renderAll(); } }));
+      } else if (d) {
+        acts = h('div', { class: 'acts' },
+          h('button', { class: 'btn', text: 'অঙ্ক বদলান', onclick: function () { S.editRow = id; S.editAmt = String(d.amount); S.confirm = null; renderAll(); } }),
+          h('button', { class: 'btn danger', text: 'বাতিল', onclick: function () { S.confirm = 'dep:' + id; S.editRow = null; renderAll(); } }));
+      } else {
+        acts = h('div', { class: 'acts' },
+          h('button', { class: 'btn primary', text: 'জমা নিন ' + taka(m.monthly), onclick: function () { putDeposit(m, id, m.monthly); } }),
+          h('button', { class: 'btn', text: 'অন্য অঙ্ক', onclick: function () { S.editRow = id; S.editAmt = String(m.monthly); S.confirm = null; renderAll(); } }));
+      }
+    }
+    return h('li', { class: 'row' },
+      h('div', { class: 'line1' },
+        h('div', { class: 'who' }, h('span', { class: 'avatar', text: initial(m.name) }),
+          h('div', { class: 'txt' }, h('span', { class: 'name', text: m.name }), h('span', { class: 'meta num', text: 'মাসিক চাঁদা ' + taka(m.monthly) }))),
+        pillFor(m, d)),
+      acts);
+  }
+
+  function viewMonth() {
+    var f = document.createDocumentFragment();
+    var go2 = function (k) { S.month = k; S.year = +k.slice(0, 4); S.editRow = null; S.confirm = null; renderAll(); };
+    f.append(h('div', { class: 'page-title' }, h('h2', { text: 'মাসের হিসাব' }),
+      h('div', { class: 'nav' },
+        h('button', { class: 'ibtn', id: 'm-prev', 'aria-label': 'আগের মাস', text: '‹', onclick: function () { go2(shiftMonth(S.month, -1)); } }),
+        h('span', { class: 'cur', text: monthLabel(S.month) }),
+        h('button', { class: 'ibtn', id: 'm-next', 'aria-label': 'পরের মাস', text: '›', onclick: function () { go2(shiftMonth(S.month, 1)); } }),
+        S.month !== CUR ? h('button', { class: 'tbtn', id: 'm-now', text: 'এই মাস', onclick: function () { go2(CUR); } }) : null)));
+    if (S.err) { f.append(errCard()); return f; }
+    if (!S.sid) { f.append(noSocietyCard()); return f; }
+    var st = stats(S.month), pct = st.exp > 0 ? Math.min(100, Math.round(st.got / st.exp * 100)) : 0;
+    f.append(h('div', { class: 'card stat' },
+      h('span', { class: 'lbl', text: monthLabel(S.month) + ' মাসে জমা' }),
+      h('span', { class: 'val num' }, taka(st.got), st.exp > 0 ? h('small', { text: ' / ' + taka(st.exp) }) : null),
+      h('div', { class: 'bar' }, h('b', { style: 'width:' + pct + '%' }))));
+    var shown = S.members.filter(function (m) { return m.start <= S.month || S.deposits[m.id + '_' + S.month]; });
+    if (!S.members.length) f.append(h('div', { class: 'empty' }, h('strong', { text: 'এখনো কোনো সদস্য নেই' }),
+      S.canEdit ? 'সদস্য পেজ থেকে প্রথম সদস্যকে যোগ করুন।' : 'কোষাধ্যক্ষ সদস্য যোগ করলে এখানে সবার জমার অবস্থা দেখা যাবে।',
+      S.canEdit ? h('button', { class: 'btn primary', text: 'সদস্য যোগ করুন', onclick: function () { S.showAdd = true; go('members'); } }) : null));
+    else if (!shown.length) f.append(h('div', { class: 'empty' }, h('strong', { text: 'এই মাসে কেউ যুক্ত ছিলেন না' }), 'আগের বা পরের মাস দেখুন।'));
+    else f.append(h('ul', { class: 'list card' }, shown.map(depositRow)));
+    return f;
+  }
+
+  function viewLedger() {
+    var f = document.createDocumentFragment();
+    f.append(h('div', { class: 'page-title' }, h('h2', { text: 'বছরের খাতা' }),
+      h('div', { class: 'nav' },
+        h('button', { class: 'ibtn', id: 'y-prev', 'aria-label': 'আগের বছর', text: '‹', onclick: function () { S.year--; renderAll(); } }),
+        h('span', { class: 'cur', text: YF.format(S.year) + ' সাল' }),
+        h('button', { class: 'ibtn', id: 'y-next', 'aria-label': 'পরের বছর', text: '›', onclick: function () { S.year++; renderAll(); } }))));
+    if (S.err) { f.append(errCard()); return f; }
+    if (!S.sid) { f.append(noSocietyCard()); return f; }
+    if (!S.members.length) { f.append(h('div', { class: 'empty' }, h('strong', { text: 'এখনো কোনো সদস্য নেই' }), 'সদস্য যোগ করলে এখানে বছরের পুরো খাতা দেখা যাবে।')); return f; }
+    var keys = []; for (var i = 0; i < 12; i++) keys.push(ymKey(S.year, i));
+    var head = h('tr', null, h('th', { text: 'সদস্য' }),
+      keys.map(function (k, i) {
+        return h('th', { class: k === CUR ? 'cur' : '' },
+          h('button', { text: SHORT[i], title: monthLabel(k), onclick: function () { S.month = k; S.editRow = null; S.confirm = null; go('month'); } }));
+      }),
+      h('th', { text: 'মোট' }), h('th', { text: 'বকেয়া মাস' }));
+    var monthSum = keys.map(function () { return 0; });
+    var body = S.members.map(function (m) {
+      var cells = keys.map(function (k, i) {
+        var d = S.deposits[m.id + '_' + k], cls = k === CUR ? 'cur ' : '';
+        if (d) { monthSum[i] += d.amount; return h('td', { class: cls + 'paid num', text: fmt(d.amount) }); }
+        if (k < m.start || m.active === false) return h('td', { class: cls + 'na', text: '·' });
+        if (k <= CUR) return h('td', { class: cls + 'due', text: 'বাকি' });
+        return h('td', { class: cls + 'na', text: '·' });
+      });
+      var t = memberTotals(m);
+      return h('tr', null,
+        h('td', { title: m.name }, m.name, m.active === false ? h('span', { class: 'tag', text: 'বন্ধ' }) : null),
+        cells,
+        h('td', { class: 'tot num', text: taka(t.total) }),
+        h('td', { class: 'num', text: t.dues ? fmt(t.dues) : '—', style: t.dues ? 'color:var(--due);font-weight:600' : null }));
+    });
+    var yearTotal = monthSum.reduce(function (a, b) { return a + b; }, 0);
+    var foot = h('tr', null, h('td', { text: 'মোট' }),
+      monthSum.map(function (s, i) { return h('td', { class: (keys[i] === CUR ? 'cur ' : '') + 'num', text: s ? fmt(s) : '—' }); }),
+      h('td', { class: 'num', text: taka(yearTotal) }), h('td', { text: '' }));
+    f.append(h('div', { class: 'card scroll' }, h('table', null, h('thead', null, head), h('tbody', null, body), h('tfoot', null, foot))),
+      h('p', { class: 'hint', text: 'মাসের নামে চাপ দিলে সেই মাসের হিসাব খোলে। টেবিলটি ডানে-বামে সরানো যায়।' }));
+    return f;
+  }
+
+  function memberCard(m) {
+    var t = memberTotals(m);
+    if (S.em && S.em.id === m.id) {
+      return h('li', { class: 'row' },
+        h('div', { class: 'form' },
+          h('label', null, 'নাম', h('input', { class: 'field', id: 'em-name', type: 'text', value: S.em.name, maxlength: '60', oninput: function (e) { S.em.name = e.target.value; } })),
+          h('label', null, 'মাসিক চাঁদা (৳)', h('input', { class: 'field amt', id: 'em-amt', type: 'text', inputmode: 'numeric', value: S.em.monthly, oninput: function (e) { S.em.monthly = e.target.value; } })),
+          h('label', null, 'শুরুর মাস', h('input', { class: 'field', id: 'em-start', type: 'month', value: S.em.start, oninput: function (e) { S.em.start = e.target.value; } }))),
+        h('div', { class: 'acts' },
+          h('button', { class: 'btn primary', text: 'সংরক্ষণ', onclick: function () { saveMember(m); } }),
+          h('button', { class: 'btn', text: 'বন্ধ', onclick: function () { S.em = null; renderAll(); } })));
+    }
+    var acts = null;
+    if (S.canEdit) {
+      if (S.confirm === 'mem:' + m.id) {
+        acts = h('div', { class: 'confirm' },
+          h('span', { class: 'hint', text: m.name + ' এবং তার সব জমার হিসাব চিরতরে মুছে যাবে। ফেরত আনা যাবে না।' }),
+          h('button', { class: 'btn danger solid', text: 'হ্যাঁ, মুছুন', onclick: function () { deleteMember(m); } }),
+          h('button', { class: 'btn', text: 'না', onclick: function () { S.confirm = null; renderAll(); } }));
+      } else {
+        acts = h('div', { class: 'acts' },
+          h('button', { class: 'btn', text: 'সম্পাদনা', onclick: function () { S.em = { id: m.id, name: m.name, monthly: String(m.monthly), start: m.start }; renderAll(); } }),
+          h('button', { class: 'btn', text: m.active === false ? 'আবার চালু' : 'সাময়িক বন্ধ', onclick: function () { toggleActive(m); } }),
+          h('button', { class: 'btn danger', text: 'মুছুন', onclick: function () { S.confirm = 'mem:' + m.id; renderAll(); } }));
+      }
+    }
+    return h('li', { class: 'row' },
+      h('div', { class: 'line1' },
+        h('div', { class: 'who' }, h('span', { class: 'avatar', text: initial(m.name) }),
+          h('div', { class: 'txt' }, h('span', { class: 'name' }, m.name, m.active === false ? h('span', { class: 'tag', text: 'বন্ধ' }) : null),
+            h('span', { class: 'meta num', text: 'মাসিক ' + taka(m.monthly) + ' · শুরু ' + monthLabel(m.start) }))),
+        h('div', { class: 'acts' },
+          h('span', { class: 'pill paid num', text: 'মোট ' + taka(t.total) }),
+          t.dues ? h('span', { class: 'pill due num', text: 'বকেয়া ' + fmt(t.dues) + ' মাস' }) : null)),
+      acts);
+  }
+
+  function viewMembers() {
+    var f = document.createDocumentFragment();
+    f.append(h('div', { class: 'page-title' }, h('h2', { text: 'সদস্য' }),
+      S.canEdit && S.sid ? h('button', { class: 'btn primary', id: 'toggle-add', text: S.showAdd ? 'বন্ধ করুন' : '+ নতুন সদস্য', onclick: function () { S.showAdd = !S.showAdd; renderAll(); } }) : null));
+    if (S.err) { f.append(errCard()); return f; }
+    if (!S.sid) { f.append(noSocietyCard()); return f; }
+    if (S.canEdit && S.showAdd) {
+      f.append(h('div', { class: 'card pad' },
+        h('form', { class: 'form', autocomplete: 'off', onsubmit: addMember },
+          h('label', null, 'নাম', keepInput('nm-name', { type: 'text', required: true, maxlength: '60' })),
+          h('label', null, 'মাসিক চাঁদা (৳)', keepInput('nm-amt', { class: 'field amt', type: 'text', inputmode: 'numeric', required: true, placeholder: '৫০০' })),
+          h('label', null, 'শুরুর মাস', keepInput('nm-start', { type: 'month', required: true }, CUR)),
+          h('button', { class: 'btn primary', type: 'submit', id: 'nm-go', text: 'যোগ করুন' }))));
+    }
+    if (!S.members.length) f.append(h('div', { class: 'empty' }, h('strong', { text: 'এখনো কোনো সদস্য নেই' }),
+      S.canEdit ? 'ওপরের "+ নতুন সদস্য" চেপে প্রথম সদস্যকে যোগ করুন।' : 'কোষাধ্যক্ষ সদস্য যোগ করলে এখানে তালিকা দেখা যাবে।'));
+    else f.append(h('ul', { class: 'list card' }, S.members.map(memberCard)));
+    return f;
+  }
+
+  function viewSettings() {
+    var f = document.createDocumentFragment();
+    f.append(h('div', { class: 'page-title' }, h('h2', { text: 'সেটিংস' })));
+    if (S.err) { f.append(errCard()); return f; }
+    if (!S.canEdit) {
+      f.append(h('div', { class: 'card pad stack' },
+        h('h3', { text: 'কোষাধ্যক্ষ লগইন' }),
+        h('form', { class: 'form', onsubmit: doLogin },
+          h('label', null, 'ইমেইল', keepInput('li-email', { type: 'email', autocomplete: 'username', required: true })),
+          h('label', null, 'পাসওয়ার্ড', keepInput('li-pass', { type: 'password', autocomplete: 'current-password', required: true })),
+          h('button', { class: 'btn primary', type: 'submit', id: 'li-go', text: 'লগইন' })),
+        h('p', { class: 'hint', text: 'হিসাব দেখতে লগইন লাগে না। শুধু জমা লিখতে বা বদলাতে কোষাধ্যক্ষের লগইন লাগে।' })));
+      return f;
+    }
+    var soc = curSociety();
+    if (soc) {
+      f.append(h('div', { class: 'card pad stack' },
+        h('h3', { text: 'সমিতির নাম' }),
+        h('form', { class: 'form', autocomplete: 'off', onsubmit: renameSociety },
+          h('label', null, 'নাম', keepInput('set-name', { type: 'text', maxlength: '60', required: true }, soc.name)),
+          h('button', { class: 'btn', type: 'submit', text: 'সংরক্ষণ' }))));
+    }
+    var list = h('div', { class: 'card pad' }, h('h3', { text: 'আমার সমিতিগুলো', style: 'margin-bottom:6px' }));
+    if (!S.societies.length) list.append(h('p', { class: 'hint', text: 'এখনো কোনো সমিতি নেই।' }));
+    S.societies.forEach(function (s) {
+      var row = h('div', { class: 'soc' },
+        h('div', { class: 'who' }, h('span', { class: 'avatar', text: initial(s.name) }), h('div', { class: 'txt' }, h('span', { class: 'name', text: s.name }), s.id === S.sid ? h('span', { class: 'meta', text: 'এখন খোলা আছে' }) : null)),
+        s.id === S.sid ? null : h('button', { class: 'btn', text: 'খুলুন', onclick: function () { selectSociety(s.id); toast(s.name + ' খোলা হয়েছে'); } }));
+      list.append(row);
+    });
+    f.append(list);
+    f.append(h('div', { class: 'card pad stack' },
+      h('h3', { text: 'নতুন সমিতি বানান' }),
+      h('form', { class: 'form', autocomplete: 'off', onsubmit: addSociety },
+        h('label', null, 'সমিতির নাম', keepInput('ns-name', { type: 'text', maxlength: '60', required: true })),
+        h('button', { class: 'btn primary', type: 'submit', id: 'ns-go', text: 'বানান' })),
+      S.legacy ? h('label', { class: 'check', style: 'display:flex' },
+        h('input', { type: 'checkbox', id: 'ns-import', checked: S.newImport ? true : null, onchange: function (e) { S.newImport = e.target.checked; } }),
+        'আগের অ্যাপের পুরনো হিসাব এই সমিতিতে আনুন') : null,
+      h('p', { class: 'hint', text: 'প্রতিটি সমিতির সদস্য ও জমা আলাদা থাকে। ওপরের বার থেকে সমিতি বদলানো যায়।' })));
+    if (soc) {
+      f.append(h('div', { class: 'card pad stack' },
+        h('h3', { text: 'হিসাবের কপি' }),
+        h('p', { class: 'hint', text: 'এই সমিতির সব জমার তালিকা Excel-এ খোলা যায় এমন ফাইল হিসেবে ফোনে নামান। মাঝেমধ্যে রেখে দিলে হিসাব নিরাপদ থাকবে।' }),
+        h('div', { class: 'acts' }, h('button', { class: 'btn', text: 'হিসাব ডাউনলোড (CSV)', onclick: downloadCsv }))));
+      var dz = h('div', { class: 'card pad stack danger-zone' }, h('h3', { text: 'মুছে ফেলা ও নতুন করে শুরু' }));
+      if (S.confirm === 'reset') {
+        dz.append(h('p', { class: 'hint', text: '"' + soc.name + '" সমিতির সব সদস্য ও সব জমার হিসাব মুছে যাবে। সমিতির নামটা থাকবে। ফেরত আনা যাবে না। নিশ্চিত হলে নিচে মুছুন লিখুন।' }),
+          h('div', { class: 'form' },
+            keepInput('reset-text', { type: 'text', placeholder: 'মুছুন', autocomplete: 'off', oninput: function (e) { S.drafts['reset-text'] = e.target.value; var b = $('#reset-go'); if (b) b.disabled = e.target.value.trim() !== 'মুছুন'; } }),
+            h('button', { class: 'btn danger solid', id: 'reset-go', text: 'সব হিসাব মুছুন', disabled: (S.drafts['reset-text'] || '').trim() !== 'মুছুন' ? true : null, onclick: resetSociety }),
+            h('button', { class: 'btn', text: 'বাতিল', onclick: function () { S.confirm = null; delete S.drafts['reset-text']; renderAll(); } })));
+      } else if (S.confirm === 'delsoc') {
+        dz.append(h('p', { class: 'hint', text: '"' + soc.name + '" সমিতি, তার সব সদস্য ও সব জমা চিরতরে মুছে যাবে। ফেরত আনা যাবে না। নিশ্চিত হলে নিচে মুছুন লিখুন।' }),
+          h('div', { class: 'form' },
+            keepInput('reset-text', { type: 'text', placeholder: 'মুছুন', autocomplete: 'off', oninput: function (e) { S.drafts['reset-text'] = e.target.value; var b = $('#reset-go'); if (b) b.disabled = e.target.value.trim() !== 'মুছুন'; } }),
+            h('button', { class: 'btn danger solid', id: 'reset-go', text: 'সমিতি মুছুন', disabled: (S.drafts['reset-text'] || '').trim() !== 'মুছুন' ? true : null, onclick: deleteSociety }),
+            h('button', { class: 'btn', text: 'বাতিল', onclick: function () { S.confirm = null; delete S.drafts['reset-text']; renderAll(); } })));
+      } else {
+        dz.append(h('p', { class: 'hint', text: 'ভুল তথ্য বা পরীক্ষার হিসাব পরিষ্কার করতে এগুলো ব্যবহার করুন।' }),
+          h('div', { class: 'acts' },
+            h('button', { class: 'btn danger', text: 'সব হিসাব মুছে নতুন করে শুরু', onclick: function () { S.confirm = 'reset'; renderAll(); } }),
+            h('button', { class: 'btn danger', text: 'এই সমিতি মুছুন', onclick: function () { S.confirm = 'delsoc'; renderAll(); } })));
+      }
+      f.append(dz);
+    }
+    f.append(h('div', { class: 'card pad' }, h('div', { class: 'acts' }, h('button', { class: 'btn', text: 'লগআউট', onclick: function () { auth.signOut(); } }))));
+    return f;
+  }
+
+  /* ---------- render ---------- */
+  function renderHead() {
+    var soc = curSociety();
+    $('#society-name').textContent = soc ? soc.name : 'সমিতির হিসাব';
+    document.title = (soc ? soc.name : 'সমিতির হিসাব');
+    var ok = S.ready.s && (!S.sid || (S.ready.m && S.ready.d)) && !S.err;
+    $('#live').classList.toggle('on', ok && S.online);
+    $('#live-text').textContent = S.err ? 'সংযোগ নেই' : !S.online ? 'অফলাইন' : ok ? 'লাইভ' : 'সংযোগ হচ্ছে…';
+    var sel = $('#soc-select');
+    sel.hidden = S.societies.length < 2;
+    if (!sel.hidden) {
+      sel.replaceChildren();
+      S.societies.forEach(function (s) { sel.append(h('option', { value: s.id, text: s.name, selected: s.id === S.sid ? true : null })); });
+      sel.value = S.sid || '';
+    }
+    var tabs = $('#tabs'); tabs.replaceChildren();
+    TABS.forEach(function (t) {
+      var b = h('button', { class: 'tab' + (S.page === t[0] ? ' on' : ''), type: 'button', 'aria-label': t[1], 'aria-current': S.page === t[0] ? 'page' : null, onclick: function () { go(t[0]); } });
+      b.innerHTML = ICONS[t[2]];
+      b.append(h('span', { text: t[1] }));
+      tabs.append(b);
+    });
+  }
+
+  function renderAll() {
+    var ae = document.activeElement, fid = null, ss = null, se = null;
+    if (ae && ae.id && ae.closest && ae.closest('#view')) {
+      fid = ae.id;
+      try { ss = ae.selectionStart; se = ae.selectionEnd; } catch (e) {}
+    }
+    renderHead();
+    var v = $('#view'), builders = { home: viewHome, month: viewMonth, ledger: viewLedger, members: viewMembers, settings: viewSettings };
+    var frag = (builders[S.page] || viewHome)();
+    v.replaceChildren(frag);
+    if (fid) {
+      var el = document.getElementById(fid);
+      if (el && el !== document.activeElement) {
+        el.focus();
+        try { if (ss != null) el.setSelectionRange(ss, se); } catch (e) {}
+      }
+    }
+  }
+  var raf = 0;
+  function schedule() { if (raf) return; raf = requestAnimationFrame(function () { raf = 0; renderAll(); }); }
+  function go(p) {
+    if (PAGES.indexOf(p) < 0) p = 'home';
+    S.page = p; S.confirm = null;
+    if (location.hash !== '#' + p) { try { history.replaceState(null, '', '#' + p); } catch (e) { location.hash = p; } }
+    renderAll(); window.scrollTo(0, 0);
+  }
+
+  /* ---------- helpers for writes ---------- */
+  var toastTimer = 0;
+  function toast(msg) {
+    var s = $('#toast span'); s.textContent = msg; s.hidden = false;
+    clearTimeout(toastTimer); toastTimer = setTimeout(function () { s.hidden = true; }, 3200);
+  }
+  function errText(e) {
+    var c = e && e.code || '';
+    if (c === 'permission-denied') return 'অনুমতি নেই। কোষাধ্যক্ষের ইমেইল দিয়ে লগইন করা আছে কিনা দেখুন।';
+    if (c === 'unavailable') return 'নেট নেই বা সংযোগ দুর্বল। পরে আবার চেষ্টা করুন।';
+    return 'কাজটা করা যায়নি, আবার চেষ্টা করুন।';
+  }
+  function run(fn, ok) {
+    return Promise.resolve().then(fn).then(function (r) { if (ok) toast(ok); return true; }, function (e) { toast(errText(e)); return false; });
+  }
+  function base() { return db.collection('societies').doc(S.sid); }
+  function chunks(arr, n) { var out = []; for (var i = 0; i < arr.length; i += n) out.push(arr.slice(i, i + n)); return out; }
+  function commitDeletes(refs) {
+    var p = Promise.resolve();
+    chunks(refs, 400).forEach(function (c) { p = p.then(function () { var b = db.batch(); c.forEach(function (r) { b.delete(r); }); return b.commit(); }); });
+    return p;
+  }
+  function commitSets(ops) {
+    var p = Promise.resolve();
+    chunks(ops, 400).forEach(function (c) { p = p.then(function () { var b = db.batch(); c.forEach(function (o) { b.set(o[0], o[1]); }); return b.commit(); }); });
+    return p;
+  }
+  function wipe(colRef) { return colRef.get().then(function (q) { return commitDeletes(q.docs.map(function (d) { return d.ref; })); }); }
+
+  /* ---------- actions ---------- */
+  function putDeposit(m, id, amount) {
+    return run(function () { return base().collection('deposits').doc(id).set({ memberId: m.id, month: S.month, amount: amount, at: Date.now() }); }, m.name + ' – জমা লেখা হয়েছে');
+  }
+  function saveAmount(m, id) {
+    var n = toNum(S.editAmt);
+    if (!(n > 0)) { toast('সঠিক অঙ্ক লিখুন।'); return; }
+    S.editRow = null; putDeposit(m, id, n); renderAll();
+  }
+  function removeDeposit(id) {
+    S.confirm = null; renderAll();
+    run(function () { return base().collection('deposits').doc(id).delete(); }, 'জমার রেকর্ড মুছে গেছে');
+  }
+  function toggleActive(m) {
+    run(function () { return base().collection('members').doc(m.id).update({ active: m.active === false }); }, m.active === false ? 'সদস্য আবার চালু হয়েছে' : 'সদস্য সাময়িক বন্ধ করা হয়েছে');
+  }
+  function saveMember(m) {
+    var name = S.em.name.trim(), amt = toNum(S.em.monthly), start = S.em.start;
+    if (!name || !(amt > 0) || !/^\d{4}-\d{2}$/.test(start)) { toast('নাম, চাঁদার অঙ্ক ও শুরুর মাস ঠিকভাবে লিখুন।'); return; }
+    S.em = null; renderAll();
+    run(function () { return base().collection('members').doc(m.id).update({ name: name, monthly: amt, start: start }); }, 'সদস্যের তথ্য বদলানো হয়েছে');
+  }
+  function deleteMember(m) {
+    var b = base(); S.confirm = null; renderAll();
+    run(function () {
+      return b.collection('deposits').where('memberId', '==', m.id).get().then(function (q) {
+        return commitDeletes(q.docs.map(function (d) { return d.ref; }).concat([b.collection('members').doc(m.id)]));
+      });
+    }, m.name + ' চিরতরে মুছে ফেলা হয়েছে');
+  }
+  function addMember(e) {
+    e.preventDefault();
+    if (!db || !S.canEdit || !S.sid) return;
+    var name = ($('#nm-name').value || '').trim(), amt = toNum($('#nm-amt').value), start = $('#nm-start').value;
+    if (!name || !(amt > 0) || !/^\d{4}-\d{2}$/.test(start)) { toast('নাম, চাঁদার অঙ্ক ও শুরুর মাস ঠিকভাবে লিখুন।'); return; }
+    var btn = $('#nm-go'); btn.disabled = true;
+    run(function () { return base().collection('members').add({ name: name, monthly: amt, start: start, active: true, order: Date.now() }); }, name + ' যোগ হয়েছে').then(function (ok) {
+      if (ok) { delete S.drafts['nm-name']; delete S.drafts['nm-amt']; }
+      renderAll();
+      var n = $('#nm-name'); if (n) n.focus();
+    });
+  }
+  function renameSociety(e) {
+    e.preventDefault();
+    var v = ($('#set-name').value || '').trim();
+    if (!v) { toast('সমিতির নাম লিখুন।'); return; }
+    run(function () { return base().update({ name: v }); }, 'নাম সংরক্ষণ হয়েছে').then(function (ok) { if (ok) { delete S.drafts['set-name']; renderAll(); } });
+  }
+  function selectSociety(id) {
+    S.sid = id; lsSet('somiti_sid', id);
+    S.month = CUR; S.year = now.getFullYear(); S.editRow = null; S.confirm = null; S.em = null; S.showAdd = false;
+    listenSociety(id); renderAll();
+  }
+  function addSociety(e) {
+    e.preventDefault();
+    var name = ($('#ns-name').value || '').trim();
+    if (!name) { toast('সমিতির নাম লিখুন।'); return; }
+    var doImport = S.legacy && S.newImport, btn = $('#ns-go'); btn.disabled = true;
+    var ref = db.collection('societies').doc();
+    run(function () {
+      return ref.set({ name: name, createdAt: Date.now() }).then(function () {
+        if (!doImport) return;
+        return Promise.all([db.collection('members').get(), db.collection('deposits').get()]).then(function (r) {
+          var ops = [];
+          r[0].docs.forEach(function (d) { ops.push([ref.collection('members').doc(d.id), d.data()]); });
+          r[1].docs.forEach(function (d) { ops.push([ref.collection('deposits').doc(d.id), d.data()]); });
+          return commitSets(ops);
+        });
+      });
+    }, '"' + name + '" সমিতি বানানো হয়েছে').then(function (ok) {
+      btn.disabled = false;
+      if (ok) { delete S.drafts['ns-name']; S.newImport = false; S.legacy = false; selectSociety(ref.id); go('home'); }
+    });
+  }
+  function resetSociety() {
+    var b = base(); S.confirm = null; delete S.drafts['reset-text']; renderAll();
+    run(function () { return Promise.all([wipe(b.collection('deposits')), wipe(b.collection('members'))]); }, 'সব হিসাব মুছে গেছে, নতুন করে শুরু করুন');
+  }
+  function deleteSociety() {
+    var b = base(), id = S.sid; S.confirm = null; delete S.drafts['reset-text'];
+    run(function () {
+      return Promise.all([wipe(b.collection('deposits')), wipe(b.collection('members'))]).then(function () { return b.delete(); });
+    }, 'সমিতি মুছে ফেলা হয়েছে').then(function () { renderAll(); });
+  }
+  function downloadCsv() {
+    try {
+      var names = {}; S.members.forEach(function (m) { names[m.id] = m.name; });
+      var rows = [['সদস্য', 'মাস', 'টাকা', 'তারিখ']];
+      Object.keys(S.deposits).map(function (k) { return S.deposits[k]; })
+        .sort(function (a, b) { return a.month < b.month ? -1 : a.month > b.month ? 1 : 0; })
+        .forEach(function (d) { rows.push([names[d.memberId] || '(মুছে ফেলা সদস্য)', d.month, d.amount, d.at ? new Date(d.at).toISOString().slice(0, 10) : '']); });
+      var csv = '﻿' + rows.map(function (r) { return r.map(function (c) { return '"' + String(c).replace(/"/g, '""') + '"'; }).join(','); }).join('\r\n');
+      var soc = curSociety(), url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+      var a = document.createElement('a');
+      a.href = url; a.download = 'somiti-hisab-' + CUR + '.csv'; document.body.append(a); a.click(); a.remove();
+      setTimeout(function () { URL.revokeObjectURL(url); }, 4000);
+      toast('ফাইল ডাউনলোড শুরু হয়েছে');
+    } catch (e) { toast('ডাউনলোড করা যায়নি।'); }
+  }
+
+  /* ---------- auth ---------- */
+  function doLogin(e) {
+    e.preventDefault();
+    if (!auth) return;
+    var btn = $('#li-go'); btn.disabled = true;
+    auth.signInWithEmailAndPassword(($('#li-email').value || '').trim(), $('#li-pass').value).then(function () {
+      delete S.drafts['li-pass']; toast('লগইন হয়েছে');
+    }, function (err) {
+      var c = err && err.code || '';
+      toast(c.indexOf('network') >= 0 ? 'নেট সংযোগ নেই।' : c.indexOf('too-many') >= 0 ? 'অনেকবার ভুল হয়েছে, একটু পরে চেষ্টা করুন।' : 'ইমেইল বা পাসওয়ার্ড ভুল।');
+    }).then(function () { btn.disabled = false; });
+  }
+
+  /* ---------- live data ---------- */
+  function onErr() { S.err = 'সংযোগে সমস্যা হচ্ছে। নেট আছে কিনা দেখে অ্যাপটি আবার খুলুন।'; renderAll(); }
+  function listenSociety(sid) {
+    if (unsubs.m) { unsubs.m(); unsubs.m = null; }
+    if (unsubs.d) { unsubs.d(); unsubs.d = null; }
+    S.members = []; S.deposits = {}; S.ready.m = false; S.ready.d = false;
+    if (!sid) { schedule(); return; }
+    var b = db.collection('societies').doc(sid);
+    unsubs.m = b.collection('members').onSnapshot(function (snap) {
+      S.members = snap.docs.map(function (d) {
+        var x = d.data() || {};
+        return { id: d.id, name: String(x.name || ''), monthly: Number(x.monthly) || 0, start: String(x.start || CUR), active: x.active !== false, order: Number(x.order) || 0 };
+      }).sort(function (a, c) { return a.order - c.order; });
+      S.ready.m = true; S.err = ''; schedule();
+    }, onErr);
+    unsubs.d = b.collection('deposits').onSnapshot(function (snap) {
+      var map = {};
+      snap.docs.forEach(function (d) {
+        var x = d.data() || {};
+        map[d.id] = { memberId: String(x.memberId || ''), month: String(x.month || ''), amount: Number(x.amount) || 0, at: Number(x.at) || 0 };
+      });
+      S.deposits = map; S.ready.d = true; S.err = ''; schedule();
+    }, onErr);
+  }
+  function checkLegacy() {
+    if (!db || !S.canEdit || S.legacy || !S.ready.s || S.societies.length) return;
+    db.collection('members').limit(1).get().then(function (q) { if (!q.empty) { S.legacy = true; schedule(); } }, function () {});
+  }
+  function start() {
+    var cfg = window.FIREBASE_CONFIG;
+    if (!window.firebase || !cfg || !cfg.apiKey || String(cfg.apiKey).indexOf('PASTE') === 0) {
+      S.err = !window.firebase ? 'ইন্টারনেট সংযোগ নেই, তাই অ্যাপ চালু হয়নি।' : 'firebase-config.js ফাইলে Firebase-এর তথ্য এখনো বসানো হয়নি।';
+      renderAll(); return;
+    }
+    try {
+      firebase.initializeApp(cfg);
+      db = firebase.firestore(); auth = firebase.auth();
+      try { db.enablePersistence({ synchronizeTabs: true }).catch(function () {}); } catch (e) {}
+    } catch (e) { S.err = 'Firebase চালু করা যায়নি। firebase-config.js ফাইলের তথ্য ঠিক আছে কিনা দেখুন।'; renderAll(); return; }
+
+    auth.onAuthStateChanged(function (u) { S.canEdit = !!u; if (!u) { S.showAdd = false; S.em = null; S.editRow = null; S.confirm = null; } checkLegacy(); schedule(); });
+    db.collection('societies').onSnapshot(function (snap) {
+      S.societies = snap.docs.map(function (d) {
+        var x = d.data() || {};
+        return { id: d.id, name: String(x.name || 'সমিতি'), createdAt: Number(x.createdAt) || 0 };
+      }).sort(function (a, b) { return a.createdAt - b.createdAt; });
+      S.ready.s = true; S.err = '';
+      var ids = S.societies.map(function (s) { return s.id; }), saved = lsGet('somiti_sid');
+      var want = S.sid && ids.indexOf(S.sid) >= 0 ? S.sid : (saved && ids.indexOf(saved) >= 0 ? saved : (ids[0] || null));
+      if (want !== S.sid) { S.sid = want; S.confirm = null; listenSociety(want); }
+      checkLegacy(); schedule();
+    }, onErr);
+  }
+
+  window.addEventListener('online', function () { S.online = true; schedule(); });
+  window.addEventListener('offline', function () { S.online = false; schedule(); });
+  window.addEventListener('hashchange', function () { var p = location.hash.slice(1); if (PAGES.indexOf(p) >= 0 && p !== S.page) { S.page = p; S.confirm = null; renderAll(); } });
+  $('#soc-select').addEventListener('change', function (e) { selectSociety(e.target.value); });
+  if ('serviceWorker' in navigator) window.addEventListener('load', function () { navigator.serviceWorker.register('sw.js').catch(function () {}); });
+
+  var p0 = location.hash.slice(1); if (PAGES.indexOf(p0) >= 0) S.page = p0;
+  renderAll();
+  start();
+})();
+</script>
+</body>
+</html>

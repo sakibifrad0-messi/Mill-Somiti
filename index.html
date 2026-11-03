@@ -411,6 +411,7 @@ tfoot td { font-weight: 600; border-top: 2px solid var(--line); }
           h('button', { class: 'btn', text: 'না', onclick: function () { S.confirm = null; renderAll(); } }));
       } else if (d) {
         acts = h('div', { class: 'acts' },
+          h('button', { class: 'btn', text: 'রসিদ', onclick: function () { shareText(receiptMessage(m, d)); } }),
           h('button', { class: 'btn', text: 'অঙ্ক বদলান', onclick: function () { S.editRow = id; S.editAmt = String(d.amount); S.confirm = null; renderAll(); } }),
           h('button', { class: 'btn danger', text: 'বাতিল', onclick: function () { S.confirm = 'dep:' + id; S.editRow = null; renderAll(); } }));
       } else {
@@ -443,6 +444,9 @@ tfoot td { font-weight: 600; border-top: 2px solid var(--line); }
       h('span', { class: 'lbl', text: monthLabel(S.month) + ' মাসে জমা' }),
       h('span', { class: 'val num' }, taka(st.got), st.exp > 0 ? h('small', { text: ' / ' + taka(st.exp) }) : null),
       h('div', { class: 'bar' }, h('b', { style: 'width:' + pct + '%' }))));
+    var bar = reportBar('month', S.month);
+    if (S.canEdit && S.month <= CUR && st.due.length) bar.append(h('button', { class: 'btn', text: 'বকেয়ার বার্তা', onclick: function () { shareText(duesMessage()); } }));
+    f.append(bar);
     var shown = S.members.filter(function (m) { return m.start <= S.month || S.deposits[m.id + '_' + S.month]; });
     if (!S.members.length) f.append(h('div', { class: 'empty' }, h('strong', { text: 'এখনো কোনো সদস্য নেই' }),
       S.canEdit ? 'সদস্য পেজ থেকে প্রথম সদস্যকে যোগ করুন।' : 'কোষাধ্যক্ষ সদস্য যোগ করলে এখানে সবার জমার অবস্থা দেখা যাবে।',
@@ -462,6 +466,7 @@ tfoot td { font-weight: 600; border-top: 2px solid var(--line); }
     if (S.err) { f.append(errCard()); return f; }
     if (!S.sid) { f.append(noSocietyCard()); return f; }
     if (!S.members.length) { f.append(h('div', { class: 'empty' }, h('strong', { text: 'এখনো কোনো সদস্য নেই' }), 'সদস্য যোগ করলে এখানে বছরের পুরো খাতা দেখা যাবে।')); return f; }
+    f.append(reportBar('year', S.year));
     var keys = []; for (var i = 0; i < 12; i++) keys.push(ymKey(S.year, i));
     var head = h('tr', null, h('th', { text: 'সদস্য' }),
       keys.map(function (k, i) {
@@ -592,10 +597,12 @@ tfoot td { font-weight: 600; border-top: 2px solid var(--line); }
         'আগের অ্যাপের পুরনো হিসাব এই সমিতিতে আনুন') : null,
       h('p', { class: 'hint', text: 'প্রতিটি সমিতির সদস্য ও জমা আলাদা থাকে। ওপরের বার থেকে সমিতি বদলানো যায়।' })));
     if (soc) {
-      f.append(h('div', { class: 'card pad stack' },
-        h('h3', { text: 'হিসাবের কপি' }),
-        h('p', { class: 'hint', text: 'এই সমিতির সব জমার তালিকা Excel-এ খোলা যায় এমন ফাইল হিসেবে ফোনে নামান। মাঝেমধ্যে রেখে দিলে হিসাব নিরাপদ থাকবে।' }),
-        h('div', { class: 'acts' }, h('button', { class: 'btn', text: 'হিসাব ডাউনলোড (CSV)', onclick: downloadCsv }))));
+      f.append(h('div', { class: 'card pad' },
+        h('h3', { text: 'রিপোর্ট (PDF)', style: 'margin-bottom:4px' }),
+        h('p', { class: 'hint', text: 'PDF ফোনে সেভ করা যায় বা WhatsApp-এ সবাইকে পাঠানো যায়। মাঝেমধ্যে সব বছরের রিপোর্ট রেখে দিলে হিসাব সবসময় আপনার হাতে থাকবে।' }),
+        reportRow('এ মাসের হিসাব (' + monthLabel(CUR) + ')', 'month', CUR),
+        reportRow('এ বছরের খাতা (' + YF.format(now.getFullYear()) + ' সাল)', 'year', now.getFullYear()),
+        reportRow('সব বছরের পুরো হিসাব', 'all', null)));
       var dz = h('div', { class: 'card pad stack danger-zone' }, h('h3', { text: 'মুছে ফেলা ও নতুন করে শুরু' }));
       if (S.confirm === 'reset') {
         dz.append(h('p', { class: 'hint', text: '"' + soc.name + '" সমিতির সব সদস্য ও সব জমার হিসাব মুছে যাবে। সমিতির নামটা থাকবে। ফেরত আনা যাবে না। নিশ্চিত হলে নিচে মুছুন লিখুন।' }),
@@ -785,20 +792,221 @@ tfoot td { font-weight: 600; border-top: 2px solid var(--line); }
       return Promise.all([wipe(b.collection('deposits')), wipe(b.collection('members'))]).then(function () { return b.delete(); });
     }, 'সমিতি মুছে ফেলা হয়েছে').then(function () { renderAll(); });
   }
-  function downloadCsv() {
-    try {
-      var names = {}; S.members.forEach(function (m) { names[m.id] = m.name; });
-      var rows = [['সদস্য', 'মাস', 'টাকা', 'তারিখ']];
-      Object.keys(S.deposits).map(function (k) { return S.deposits[k]; })
-        .sort(function (a, b) { return a.month < b.month ? -1 : a.month > b.month ? 1 : 0; })
-        .forEach(function (d) { rows.push([names[d.memberId] || '(মুছে ফেলা সদস্য)', d.month, d.amount, d.at ? new Date(d.at).toISOString().slice(0, 10) : '']); });
-      var csv = '﻿' + rows.map(function (r) { return r.map(function (c) { return '"' + String(c).replace(/"/g, '""') + '"'; }).join(','); }).join('\r\n');
-      var soc = curSociety(), url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
-      var a = document.createElement('a');
-      a.href = url; a.download = 'somiti-hisab-' + CUR + '.csv'; document.body.append(a); a.click(); a.remove();
-      setTimeout(function () { URL.revokeObjectURL(url); }, 4000);
-      toast('ফাইল ডাউনলোড শুরু হয়েছে');
-    } catch (e) { toast('ডাউনলোড করা যায়নি।'); }
+  /* ---------- share helpers ---------- */
+  function copyText(text) {
+    var done = function () { toast('বার্তা কপি হয়েছে। WhatsApp-এ পেস্ট করুন।'); };
+    function fallback() {
+      var t = document.createElement('textarea'); t.value = text; t.style.position = 'fixed'; t.style.opacity = '0';
+      document.body.append(t); t.select();
+      var ok = false; try { ok = document.execCommand('copy'); } catch (e) {}
+      t.remove(); if (ok) done(); else toast('কপি করা যায়নি।');
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  }
+  function shareText(text) {
+    if (navigator.share) navigator.share({ text: text }).catch(function (e) { if (!e || e.name !== 'AbortError') copyText(text); });
+    else copyText(text);
+  }
+  function duesMessage() {
+    var st = stats(S.month), soc = curSociety(), tot = 0;
+    var lines = [(soc ? soc.name : 'সমিতি') + ' – ' + monthLabel(S.month) + ' মাসের চাঁদা বাকি আছে:'];
+    st.due.forEach(function (m, i) { tot += m.monthly; lines.push(YF.format(i + 1) + '. ' + m.name + ' – ' + taka(m.monthly)); });
+    lines.push('মোট বাকি: ' + taka(tot));
+    lines.push('সবাই দ্রুত জমা দিন। ধন্যবাদ।');
+    return lines.join('\n');
+  }
+  function receiptMessage(m, d) {
+    var soc = curSociety(), t = memberTotals(m), when = '';
+    try { when = d.at ? new Date(d.at).toLocaleDateString('bn-BD', { day: 'numeric', month: 'long', year: 'numeric' }) : ''; } catch (e) {}
+    return [(soc ? soc.name : 'সমিতি') + ' – জমার রসিদ', 'সদস্য: ' + m.name, 'মাস: ' + monthLabel(d.month), 'জমা: ' + taka(d.amount), when ? 'তারিখ: ' + when : null, 'আপনার এ পর্যন্ত মোট জমা: ' + taka(t.total), 'ধন্যবাদ।'].filter(Boolean).join('\n');
+  }
+
+  /* ---------- PDF report (drawn on canvas, then wrapped into a PDF) ---------- */
+  var RC = { ink: '#13261F', muted: '#5B6F69', line: '#D5DFDA', teal: '#0B6B5C', soft: '#EEF5F2', ok: '#17794B', okBg: '#DDF1E5', due: '#A94A17', dueBg: '#F8E6DA', gold: '#B8892B' };
+  var FD = '"Anek Bangla","Hind Siliguri","Noto Sans Bengali",sans-serif', FB = '"Hind Siliguri","Noto Sans Bengali",sans-serif';
+  function fnt(w, px, fam) { return w + ' ' + px + 'px ' + (fam || FB); }
+  function fit(x, s, maxW) {
+    if (x.measureText(s).width <= maxW) return s;
+    var a = Array.from(s);
+    while (a.length > 1 && x.measureText(a.join('') + '…').width > maxW) a.pop();
+    return a.join('') + '…';
+  }
+  function ensureFonts() {
+    if (!document.fonts || !document.fonts.load) return Promise.resolve();
+    return Promise.all([document.fonts.load('800 40px "Anek Bangla"'), document.fonts.load('700 40px "Anek Bangla"'), document.fonts.load('400 24px "Hind Siliguri"'), document.fonts.load('600 24px "Hind Siliguri"')]).catch(function () {});
+  }
+  function Report() { this.pages = []; }
+  Report.prototype.add = function (w, hh) {
+    var c = document.createElement('canvas'); c.width = w; c.height = hh;
+    var x = c.getContext('2d'); x.fillStyle = '#FFFFFF'; x.fillRect(0, 0, w, hh); x.textBaseline = 'middle';
+    var p = { c: c, x: x, w: w, h: hh }; this.pages.push(p); return p;
+  };
+  function drawHeader(p, M, sub) {
+    var x = p.x, soc = curSociety();
+    x.fillStyle = RC.teal; x.fillRect(0, 0, p.w, 150);
+    x.textAlign = 'left'; x.fillStyle = '#FFFFFF'; x.font = fnt('800', 46, FD);
+    x.fillText(fit(x, soc ? soc.name : 'সমিতির হিসাব', p.w - 2 * M), M, 62);
+    x.fillStyle = 'rgba(255,255,255,.85)'; x.font = fnt('500', 26);
+    x.fillText(sub, M, 112);
+    x.fillStyle = RC.gold; x.fillRect(M, 150, 90, 5);
+    return 195;
+  }
+  function boxes(p, y, M, items) {
+    var x = p.x, gap = 16, n = items.length, bw = (p.w - 2 * M - gap * (n - 1)) / n;
+    items.forEach(function (it, i) {
+      var bx = M + i * (bw + gap);
+      x.fillStyle = RC.soft; x.fillRect(bx, y, bw, 112);
+      x.fillStyle = RC.teal; x.fillRect(bx, y, 5, 112);
+      x.textAlign = 'left'; x.fillStyle = RC.muted; x.font = fnt('400', 22); x.fillText(fit(x, it[0], bw - 36), bx + 24, y + 33);
+      x.fillStyle = RC.ink; x.font = fnt('700', 38, FD); x.fillText(fit(x, it[1], bw - 36), bx + 24, y + 77);
+    });
+    return y + 112 + 30;
+  }
+  function cell(p, x0, y, w, rh, c, align, fs, bold) {
+    var x = p.x;
+    if (c.bg) { x.fillStyle = c.bg; x.fillRect(x0 + 3, y + 6, w - 6, rh - 12); }
+    x.fillStyle = c.color || RC.ink; x.font = fnt(c.bold || bold ? '600' : '400', c.fs || fs);
+    var s = fit(x, String(c.t), w - 18);
+    x.textAlign = align; var tx = align === 'left' ? x0 + 12 : align === 'right' ? x0 + w - 12 : x0 + w / 2;
+    x.fillText(s, tx, y + rh / 2 + 2);
+  }
+  function drawTable(rep, cfg) {
+    var p = rep.add(cfg.W, cfg.H), y = drawHeader(p, cfg.M, cfg.sub), rh = cfg.rh, tw = cfg.W - 2 * cfg.M, limit = cfg.H - 100;
+    if (cfg.intro) y = cfg.intro(p, y);
+    function head() {
+      p.x.fillStyle = RC.soft; p.x.fillRect(cfg.M, y, tw, rh);
+      var cx = cfg.M; cfg.cols.forEach(function (c) { cell(p, cx, y, c.w, rh, { t: c.label, color: RC.muted }, c.align, cfg.fs, true); cx += c.w; });
+      y += rh;
+    }
+    head();
+    var all = cfg.rows.concat(cfg.foot ? [cfg.foot] : []);
+    all.forEach(function (r, i) {
+      var isFoot = cfg.foot && i === all.length - 1;
+      if (y + rh > limit) { p = rep.add(cfg.W, cfg.H); y = drawHeader(p, cfg.M, cfg.sub); head(); }
+      if (isFoot) { p.x.fillStyle = RC.ink; p.x.fillRect(cfg.M, y, tw, 3); }
+      var cx = cfg.M;
+      cfg.cols.forEach(function (c, ci) { var cv = r[ci]; if (cv == null || typeof cv !== 'object') cv = { t: cv == null ? '' : cv }; cell(p, cx, y, c.w, rh, cv, c.align, cfg.fs, isFoot); cx += c.w; });
+      p.x.fillStyle = RC.line; p.x.fillRect(cfg.M, y + rh - 1, tw, 1);
+      y += rh;
+    });
+  }
+  function footers(rep) {
+    var n = rep.pages.length, when = '';
+    try { when = new Date().toLocaleDateString('bn-BD', { day: 'numeric', month: 'long', year: 'numeric' }); } catch (e) {}
+    rep.pages.forEach(function (p, i) {
+      var x = p.x; x.fillStyle = RC.muted; x.font = fnt('400', 20);
+      x.textAlign = 'left'; x.fillText('তৈরি: ' + when, 64, p.h - 40);
+      x.textAlign = 'right'; x.fillText('পৃষ্ঠা ' + YF.format(i + 1) + ' / ' + YF.format(n), p.w - 64, p.h - 40);
+    });
+  }
+  function monthReport(rep, month) {
+    var st = stats(month), rows = S.members.filter(function (m) { return m.start <= month || S.deposits[m.id + '_' + month]; });
+    var data = rows.map(function (m, i) {
+      var d = S.deposits[m.id + '_' + month], status;
+      if (d) status = { t: 'জমা', color: RC.ok, bg: RC.okBg };
+      else if (m.start > month) status = { t: 'যুক্ত নন', color: RC.muted };
+      else if (m.active === false) status = { t: 'বন্ধ', color: RC.muted };
+      else if (month > CUR) status = { t: 'সময় হয়নি', color: RC.muted };
+      else status = { t: 'বাকি', color: RC.due, bg: RC.dueBg };
+      var when = ''; try { when = d && d.at ? new Date(d.at).toLocaleDateString('bn-BD', { day: 'numeric', month: 'short' }) : ''; } catch (e) {}
+      return [YF.format(i + 1), m.name, taka(m.monthly), status, d ? taka(d.amount) : '—', when];
+    });
+    drawTable(rep, {
+      W: 1240, H: 1754, M: 70, rh: 58, fs: 25, sub: 'মাসিক হিসাব — ' + monthLabel(month),
+      cols: [{ w: 60, label: '#', align: 'center' }, { w: 360, label: 'নাম', align: 'left' }, { w: 160, label: 'মাসিক চাঁদা', align: 'right' }, { w: 160, label: 'অবস্থা', align: 'center' }, { w: 190, label: 'জমা', align: 'right' }, { w: 170, label: 'তারিখ', align: 'center' }],
+      intro: function (p, y) { return boxes(p, y, 70, [['এ মাসে জমা', taka(st.got)], ['প্রত্যাশিত', taka(st.exp)], ['বকেয়া', fmt(st.due.length) + ' জন'], ['সমিতির মোট জমা', taka(allTotal())]]); },
+      rows: data,
+      foot: ['', 'মোট', taka(st.exp), '', taka(st.got), '']
+    });
+  }
+  function yearReport(rep, year) {
+    var keys = []; for (var i = 0; i < 12; i++) keys.push(ymKey(year, i));
+    var monthSum = keys.map(function () { return 0; }), yearTotal = 0;
+    var data = S.members.map(function (m) {
+      var tot = 0, dues = 0;
+      var cells = keys.map(function (k, i) {
+        var d = S.deposits[m.id + '_' + k];
+        if (d) { tot += d.amount; monthSum[i] += d.amount; return { t: fmt(d.amount), color: RC.ok }; }
+        if (k < m.start || m.active === false || k > CUR) return { t: '·', color: RC.line };
+        dues++; return { t: 'বাকি', color: RC.due, bg: RC.dueBg, fs: 17 };
+      });
+      yearTotal += tot;
+      return [{ t: m.name + (m.active === false ? ' (বন্ধ)' : ''), bold: true }].concat(cells, [{ t: taka(tot), bold: true }, dues ? { t: fmt(dues), color: RC.due, bold: true } : { t: '—', color: RC.muted }]);
+    });
+    var cols = [{ w: 270, label: 'সদস্য', align: 'left' }].concat(keys.map(function (k, i) { return { w: 92, label: SHORT[i], align: 'center' }; }), [{ w: 150, label: 'মোট', align: 'right' }, { w: 100, label: 'বকেয়া', align: 'center' }]);
+    drawTable(rep, {
+      W: 1754, H: 1240, M: 65, rh: 56, fs: 21, sub: 'বছরের খাতা — ' + YF.format(year) + ' সাল', cols: cols,
+      intro: function (p, y) { return boxes(p, y, 65, [['এ বছরে মোট জমা', taka(yearTotal)], ['চালু সদস্য', fmt(S.members.filter(function (m) { return m.active !== false; }).length) + ' জন'], ['সমিতির মোট জমা', taka(allTotal())]]); },
+      rows: data,
+      foot: ['মোট'].concat(monthSum.map(function (v) { return v ? fmt(v) : '—'; }), [taka(yearTotal), ''])
+    });
+  }
+  function allReport(rep) {
+    var y0 = now.getFullYear(), y1 = y0;
+    S.members.forEach(function (m) { var y = +String(m.start).slice(0, 4); if (y && y < y0) y0 = y; });
+    Object.keys(S.deposits).forEach(function (k) { var y = +String(S.deposits[k].month).slice(0, 4); if (y && y < y0) y0 = y; if (y > y1) y1 = y; });
+    if (y1 - y0 > 15) y0 = y1 - 15;
+    for (var y = y0; y <= y1; y++) yearReport(rep, y);
+  }
+  function buildPdf(pages) {
+    var enc = new TextEncoder(), chunks = [], offs = [], len = 0;
+    function push(u8) { chunks.push(u8); len += u8.length; }
+    function str(t) { push(enc.encode(t)); }
+    function obj(i) { offs[i] = len; str(i + ' 0 obj\n'); }
+    var n = 2 + pages.length * 3;
+    str('%PDF-1.4\n');
+    obj(1); str('<< /Type /Catalog /Pages 2 0 R >>\nendobj\n');
+    obj(2); str('<< /Type /Pages /Kids [' + pages.map(function (p, i) { return (3 + i * 3) + ' 0 R'; }).join(' ') + '] /Count ' + pages.length + ' >>\nendobj\n');
+    pages.forEach(function (p, i) {
+      var pg = 3 + i * 3, ct = pg + 1, im = pg + 2, cs = 'q ' + p.pw + ' 0 0 ' + p.ph + ' 0 0 cm /Im0 Do Q';
+      obj(pg); str('<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ' + p.pw + ' ' + p.ph + '] /Resources << /XObject << /Im0 ' + im + ' 0 R >> >> /Contents ' + ct + ' 0 R >>\nendobj\n');
+      obj(ct); str('<< /Length ' + cs.length + ' >>\nstream\n' + cs + '\nendstream\nendobj\n');
+      obj(im); str('<< /Type /XObject /Subtype /Image /Width ' + p.w + ' /Height ' + p.h + ' /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ' + p.jpg.length + ' >>\nstream\n'); push(p.jpg); str('\nendstream\nendobj\n');
+    });
+    var xref = len; str('xref\n0 ' + (n + 1) + '\n0000000000 65535 f \n');
+    for (var i = 1; i <= n; i++) str(String(offs[i]).padStart(10, '0') + ' 00000 n \n');
+    str('trailer\n<< /Size ' + (n + 1) + ' /Root 1 0 R >>\nstartxref\n' + xref + '\n%%EOF');
+    return new Blob(chunks, { type: 'application/pdf' });
+  }
+  function saveBlob(blob, name) {
+    var url = URL.createObjectURL(blob), a = document.createElement('a');
+    a.href = url; a.download = name; document.body.append(a); a.click(); a.remove();
+    setTimeout(function () { URL.revokeObjectURL(url); }, 5000);
+    toast('PDF নামানো শুরু হয়েছে। Downloads ফোল্ডারে দেখুন।');
+  }
+  function shareFile(blob, name) {
+    var f = null; try { f = new File([blob], name, { type: 'application/pdf' }); } catch (e) {}
+    if (f && navigator.canShare && navigator.canShare({ files: [f] })) navigator.share({ files: [f], title: name }).catch(function (e) { if (!e || e.name !== 'AbortError') saveBlob(blob, name); });
+    else saveBlob(blob, name);
+  }
+  var reporting = false;
+  function exportReport(kind, doShare, arg) {
+    if (!S.sid) { toast('আগে একটা সমিতি বানান।'); return; }
+    if (reporting) return;
+    reporting = true; toast('রিপোর্ট বানানো হচ্ছে…');
+    ensureFonts().then(function () {
+      var rep = new Report(), tag;
+      if (kind === 'month') { var mk = arg || S.month; monthReport(rep, mk); tag = 'mash-' + mk; }
+      else if (kind === 'year') { var yr = arg || S.year; yearReport(rep, yr); tag = 'bochor-' + yr; }
+      else { allReport(rep); tag = 'sob-hisab'; }
+      footers(rep);
+      var pages = rep.pages.map(function (p) {
+        var bin = atob(p.c.toDataURL('image/jpeg', 0.92).split(',')[1]), u = new Uint8Array(bin.length);
+        for (var i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i);
+        var land = p.w > p.h;
+        return { w: p.w, h: p.h, pw: land ? 841.89 : 595.28, ph: land ? 595.28 : 841.89, jpg: u };
+      });
+      var blob = buildPdf(pages), name = 'somiti-' + tag + '.pdf';
+      if (doShare) shareFile(blob, name); else saveBlob(blob, name);
+    }).catch(function () { toast('রিপোর্ট বানানো যায়নি।'); }).then(function () { reporting = false; });
+  }
+  function reportBar(kind, arg, label) {
+    return h('div', { class: 'acts' },
+      h('button', { class: 'btn primary', text: label || 'PDF রিপোর্ট', onclick: function () { exportReport(kind, false, arg); } }),
+      navigator.share ? h('button', { class: 'btn', text: 'শেয়ার', onclick: function () { exportReport(kind, true, arg); } }) : null);
+  }
+  function reportRow(label, kind, arg) {
+    return h('div', { class: 'soc' }, h('span', { class: 'name', text: label }), reportBar(kind, arg, 'PDF সেভ'));
   }
 
   /* ---------- auth ---------- */

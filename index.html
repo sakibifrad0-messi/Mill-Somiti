@@ -12,6 +12,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anek+Bangla:wght@500;700;800&family=Hind+Siliguri:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@400;500;600;700;800&text=%E0%A7%A6%E0%A7%A7%E0%A7%A8%E0%A7%A9%E0%A7%AA%E0%A7%AB%E0%A7%AC%E0%A7%AD%E0%A7%AE%E0%A7%AF%E0%A7%B3&display=swap">
 <style>
 /* Layout: sticky top bar (society name + switcher), one page at a time in the middle, bottom tab bar. */
 :root {
@@ -33,8 +34,8 @@
   --due: #A94A17;
   --due-soft: #F8E6DA;
   --shadow: 0 1px 2px rgba(15,36,32,.06), 0 6px 18px rgba(15,36,32,.06);
-  --font-display: "Anek Bangla", "Hind Siliguri", "Noto Sans Bengali", system-ui, sans-serif;
-  --font-body: "Hind Siliguri", "Noto Sans Bengali", system-ui, sans-serif;
+  --font-display: "Noto Sans Bengali", "Anek Bangla", "Hind Siliguri", system-ui, sans-serif;
+  --font-body: "Noto Sans Bengali", "Hind Siliguri", system-ui, sans-serif;
   color-scheme: light;
 }
 @media (prefers-color-scheme: dark) {
@@ -215,8 +216,10 @@ tfoot td { font-weight: 600; border-top: 2px solid var(--line); }
 <script>
 (function () {
   var $ = function (s) { return document.querySelector(s); };
-  var BN = new Intl.NumberFormat('bn-BD');
-  var YF = new Intl.NumberFormat('bn-BD', { useGrouping: false });
+  var BN, YF;
+  function setDigits(mode) { var loc = mode === 'bn' ? 'bn-BD' : 'en-US'; BN = new Intl.NumberFormat(loc); YF = new Intl.NumberFormat(loc, { useGrouping: false }); }
+  var DIGITS = (function () { try { return localStorage.getItem('somiti_digits') === 'en' ? 'en' : 'bn'; } catch (e) { return 'bn'; } })();
+  setDigits(DIGITS);
   var fmt = function (n) { return BN.format(Math.round(Number(n) || 0)); };
   var taka = function (n) { return '৳' + fmt(n); };
   var MONTHS = ['জানুয়ারি','ফেব্রুয়ারি','মার্চ','এপ্রিল','মে','জুন','জুলাই','আগস্ট','সেপ্টেম্বর','অক্টোবর','নভেম্বর','ডিসেম্বর'];
@@ -227,7 +230,8 @@ tfoot td { font-weight: 600; border-top: 2px solid var(--line); }
   var CUR = ymKey(now.getFullYear(), now.getMonth());
   var monthLabel = function (k) { var p = k.split('-'); return MONTHS[+p[1] - 1] + ' ' + YF.format(+p[0]); };
   var shiftMonth = function (k, d) { var p = k.split('-'); var t = (+p[0]) * 12 + (+p[1] - 1) + d; return ymKey(Math.floor(t / 12), t % 12); };
-  var dateShort = function (ts) { try { return new Date(ts).toLocaleDateString('bn-BD', { day: 'numeric', month: 'short' }); } catch (e) { return ''; } };
+  var dateShort = function (ts) { try { var d = new Date(ts); return YF.format(d.getDate()) + ' ' + SHORT[d.getMonth()]; } catch (e) { return ''; } };
+  var dateLong = function (ts) { try { var d = new Date(ts); return YF.format(d.getDate()) + ' ' + MONTHS[d.getMonth()] + ' ' + YF.format(d.getFullYear()); } catch (e) { return ''; } };
   var toNum = function (s) {
     var t = String(s).replace(/[০-৯]/g, function (c) { return '০১২৩৪৫৬৭৮৯'.indexOf(c); }).replace(/[,\s৳]/g, '');
     var n = Number(t);
@@ -546,7 +550,7 @@ tfoot td { font-weight: 600; border-top: 2px solid var(--line); }
       f.append(h('div', { class: 'card pad' },
         h('form', { class: 'form', autocomplete: 'off', onsubmit: addMember },
           h('label', null, 'নাম', keepInput('nm-name', { type: 'text', required: true, maxlength: '60' })),
-          h('label', null, 'মাসিক চাঁদা (৳)', keepInput('nm-amt', { class: 'field amt', type: 'text', inputmode: 'numeric', required: true, placeholder: '৫০০' })),
+          h('label', null, 'মাসিক চাঁদা (৳)', keepInput('nm-amt', { class: 'field amt', type: 'text', inputmode: 'numeric', required: true, placeholder: '500' })),
           h('label', null, 'শুরুর মাস', keepInput('nm-start', { type: 'month', required: true }, CUR)),
           h('button', { class: 'btn primary', type: 'submit', id: 'nm-go', text: 'যোগ করুন' }))));
     }
@@ -556,9 +560,21 @@ tfoot td { font-weight: 600; border-top: 2px solid var(--line); }
     return f;
   }
 
+  function digitCard() {
+    var mk = function (mode, label) {
+      return h('button', { class: 'btn' + (DIGITS === mode ? ' primary' : ''), type: 'button', text: label, onclick: function () {
+        DIGITS = mode; try { localStorage.setItem('somiti_digits', mode); } catch (e) {} setDigits(mode); renderAll();
+      } });
+    };
+    return h('div', { class: 'card pad stack' }, h('h3', { text: 'সংখ্যার ধরন' }),
+      h('div', { class: 'acts' }, mk('en', '1 2 3 (ইংরেজি)'), mk('bn', '১ ২ ৩ (বাংলা)')),
+      h('p', { class: 'hint', text: 'টাকার অঙ্ক ও তারিখ কোন অঙ্কে দেখাবে, সেটা এই ফোনের জন্য বদলায়। PDF-এও একই অঙ্ক আসবে।' }));
+  }
+
   function viewSettings() {
     var f = document.createDocumentFragment();
     f.append(h('div', { class: 'page-title' }, h('h2', { text: 'সেটিংস' })));
+    f.append(digitCard());
     if (S.err) { f.append(errCard()); return f; }
     if (!S.canEdit) {
       f.append(h('div', { class: 'card pad stack' },
@@ -817,13 +833,13 @@ tfoot td { font-weight: 600; border-top: 2px solid var(--line); }
   }
   function receiptMessage(m, d) {
     var soc = curSociety(), t = memberTotals(m), when = '';
-    try { when = d.at ? new Date(d.at).toLocaleDateString('bn-BD', { day: 'numeric', month: 'long', year: 'numeric' }) : ''; } catch (e) {}
+    when = d.at ? dateLong(d.at) : '';
     return [(soc ? soc.name : 'সমিতি') + ' – জমার রসিদ', 'সদস্য: ' + m.name, 'মাস: ' + monthLabel(d.month), 'জমা: ' + taka(d.amount), when ? 'তারিখ: ' + when : null, 'আপনার এ পর্যন্ত মোট জমা: ' + taka(t.total), 'ধন্যবাদ।'].filter(Boolean).join('\n');
   }
 
   /* ---------- PDF report (drawn on canvas, then wrapped into a PDF) ---------- */
   var RC = { ink: '#13261F', muted: '#5B6F69', line: '#D5DFDA', teal: '#0B6B5C', soft: '#EEF5F2', ok: '#17794B', okBg: '#DDF1E5', due: '#A94A17', dueBg: '#F8E6DA', gold: '#B8892B' };
-  var FD = '"Anek Bangla","Hind Siliguri","Noto Sans Bengali",sans-serif', FB = '"Hind Siliguri","Noto Sans Bengali",sans-serif';
+  var FD = '"Noto Sans Bengali","Anek Bangla","Hind Siliguri",sans-serif', FB = '"Noto Sans Bengali","Hind Siliguri",sans-serif';
   function fnt(w, px, fam) { return w + ' ' + px + 'px ' + (fam || FB); }
   function fit(x, s, maxW) {
     if (x.measureText(s).width <= maxW) return s;
@@ -833,7 +849,7 @@ tfoot td { font-weight: 600; border-top: 2px solid var(--line); }
   }
   function ensureFonts() {
     if (!document.fonts || !document.fonts.load) return Promise.resolve();
-    return Promise.all([document.fonts.load('800 40px "Anek Bangla"'), document.fonts.load('700 40px "Anek Bangla"'), document.fonts.load('400 24px "Hind Siliguri"'), document.fonts.load('600 24px "Hind Siliguri"')]).catch(function () {});
+    return Promise.all([document.fonts.load('800 40px "Noto Sans Bengali"', '০১২৩৪৫৬৭৮৯৳'), document.fonts.load('600 24px "Noto Sans Bengali"', '০১২৩৪৫৬৭৮৯৳'), document.fonts.load('800 40px "Anek Bangla"'), document.fonts.load('700 40px "Anek Bangla"'), document.fonts.load('400 24px "Hind Siliguri"'), document.fonts.load('600 24px "Hind Siliguri"')]).catch(function () {});
   }
   function Report() { this.pages = []; }
   Report.prototype.add = function (w, hh) {
@@ -892,7 +908,7 @@ tfoot td { font-weight: 600; border-top: 2px solid var(--line); }
   }
   function footers(rep) {
     var n = rep.pages.length, when = '';
-    try { when = new Date().toLocaleDateString('bn-BD', { day: 'numeric', month: 'long', year: 'numeric' }); } catch (e) {}
+    when = dateLong(Date.now());
     rep.pages.forEach(function (p, i) {
       var x = p.x; x.fillStyle = RC.muted; x.font = fnt('400', 20);
       x.textAlign = 'left'; x.fillText('তৈরি: ' + when, 64, p.h - 40);
@@ -908,7 +924,7 @@ tfoot td { font-weight: 600; border-top: 2px solid var(--line); }
       else if (m.active === false) status = { t: 'বন্ধ', color: RC.muted };
       else if (month > CUR) status = { t: 'সময় হয়নি', color: RC.muted };
       else status = { t: 'বাকি', color: RC.due, bg: RC.dueBg };
-      var when = ''; try { when = d && d.at ? new Date(d.at).toLocaleDateString('bn-BD', { day: 'numeric', month: 'short' }) : ''; } catch (e) {}
+      var when = d && d.at ? dateShort(d.at) : '';
       return [YF.format(i + 1), m.name, taka(m.monthly), status, d ? taka(d.amount) : '—', when];
     });
     drawTable(rep, {

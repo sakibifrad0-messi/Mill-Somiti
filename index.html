@@ -1399,16 +1399,16 @@ tfoot td { font-weight: 600; border-top: 2px solid var(--line); }
     if (cur) lines.push(cur); return lines;
   }
   var THEMES = {
-    mill: { label: 'মিল আড্ডা', bg: '#F6ECD9', g1: '#8A5429', g2: '#3B2212', deep: '#43260F', gold: '#F2B544', due: '#A63D12', dueBg: '#F9E0C8', curBg: '#FBE9B8', curFg: '#7A5200', ink: '#2E2113', mute: '#6B5742', line: '#E3D1B0', sub: 'মিলের পাশে সামাদ মামার চায়ের আড্ডা', hdr: 'মিল সমিতি — বকেয়া চাঁদার অনুরোধ' },
-    salam: { label: 'সবুজ সালাম', bg: '#FBF6EA', g1: '#12806B', g2: '#05382F', deep: '#05382F', gold: '#E3B965', due: '#B24A12', dueBg: '#FAE7DC', curBg: '#F6ECD3', curFg: '#8F6408', ink: '#2B3B35', mute: '#5B6F69', line: '#E8DFC8', sub: 'বকেয়া চাঁদার বিনীত অনুরোধ' },
-    plain: { label: 'সাদামাটা', bg: '#F7F8FA', g1: '#2B4C7E', g2: '#16294A', deep: '#16294A', gold: '#D4AF5A', due: '#B3421B', dueBg: '#FBE6DD', curBg: '#F6EBCB', curFg: '#85600A', ink: '#24303F', mute: '#5E6B7A', line: '#DDE2EA', sub: 'বকেয়া চাঁদার অনুরোধ' }
+    mill: { label: 'মিল আড্ডা', bg: '#F6ECD9', g1: '#8A5429', g2: '#3B2212', deep: '#43260F', gold: '#F2B544', due: '#A63D12', dueBg: '#F9E0C8', curBg: '#FBE9B8', curFg: '#7A5200', ink: '#2E2113', mute: '#6B5742', line: '#E3D1B0', sub: '' },
+    salam: { label: 'সবুজ সালাম', bg: '#FBF6EA', g1: '#12806B', g2: '#05382F', deep: '#05382F', gold: '#E3B965', due: '#B24A12', dueBg: '#FAE7DC', curBg: '#F6ECD3', curFg: '#8F6408', ink: '#2B3B35', mute: '#5B6F69', line: '#E8DFC8', sub: 'বকেয়া জমার বিনীত অনুরোধ' },
+    plain: { label: 'সাদামাটা', bg: '#F7F8FA', g1: '#2B4C7E', g2: '#16294A', deep: '#16294A', gold: '#D4AF5A', due: '#B3421B', dueBg: '#FBE6DD', curBg: '#F6EBCB', curFg: '#85600A', ink: '#24303F', mute: '#5E6B7A', line: '#DDE2EA', sub: 'বকেয়া জমার অনুরোধ' }
   };
   function themeKey() { var k = S.alertTheme || lsGet('somiti_theme'); return THEMES[k] ? k : 'mill'; }
   function alertIntro(key, names) {
     var one = names.length === 1, n = DUE_DAY && YF.format(DUE_DAY), who = one ? names[0] : '';
-    if (key === 'mill') return (one ? 'প্রিয় ' + who + ', ' : 'প্রিয় ভাইয়েরা, ') + 'মিলের আড্ডা আর সামাদ মামার চায়ের কাপ জমে ওঠে সমিতি ঠিক থাকলেই। প্রতি মাসের ' + n + ' তারিখের মধ্যে চাঁদা জমা দেওয়ার কথা, ' + (one ? 'আপনারটা' : 'নিচের সবারটা') + ' এখনো বাকি। দয়া করে তাড়াতাড়ি জমা দিয়ে দিন।';
-    if (key === 'plain') return (one ? 'সম্মানিত ' + who + ', ' : 'সম্মানিত সদস্যবৃন্দ, ') + 'সমিতির নিয়ম অনুযায়ী প্রতি মাসের ' + n + ' তারিখের মধ্যে মাসিক চাঁদা জমা দিতে হয়। ' + (one ? 'আপনার' : 'নিচের সদস্যদের') + ' চাঁদা এখনো বাকি আছে। অনুগ্রহ করে দ্রুত পরিশোধ করুন।';
-    return (one ? 'প্রিয় ' + who + ', ' : 'প্রিয় ভাইয়েরা, ') + 'সমিতির নিয়ম অনুযায়ী প্রতি মাসের ' + n + ' তারিখের মধ্যে মাসিক চাঁদা জমা দেওয়ার কথা। ' + (one ? 'আপনার' : 'নিচের সদস্যদের') + ' চাঁদা এখনো বাকি আছে। অনুগ্রহ করে দ্রুত পরিশোধ করে সমিতির হিসাব পরিষ্কার রাখতে সহযোগিতা করুন।';
+    if (key === 'mill') return (one ? 'প্রিয় ' + who + ', ' : 'প্রিয় ভাইয়েরা, ') + 'মিলের আড্ডা আর সামাদ মামার চায়ের কাপ জমে ওঠে সমিতি ঠিক থাকলেই। প্রতি মাসের ' + n + ' তারিখের মধ্যে মাসিক জমা দেওয়ার কথা, ' + (one ? 'আপনারটা' : 'নিচের সবারটা') + ' এখনো বাকি। দয়া করে তাড়াতাড়ি জমা দিয়ে দিন।';
+    if (key === 'plain') return (one ? 'সম্মানিত ' + who + ', ' : 'সম্মানিত সদস্যবৃন্দ, ') + 'সমিতির নিয়ম অনুযায়ী প্রতি মাসের ' + n + ' তারিখের মধ্যে মাসিক জমা দিতে হয়। ' + (one ? 'আপনার' : 'নিচের সদস্যদের') + ' মাসিক জমা এখনো বাকি আছে। অনুগ্রহ করে দ্রুত পরিশোধ করুন।';
+    return (one ? 'প্রিয় ' + who + ', ' : 'প্রিয় ভাইয়েরা, ') + 'সমিতির নিয়ম অনুযায়ী প্রতি মাসের ' + n + ' তারিখের মধ্যে মাসিক জমা দেওয়ার কথা। ' + (one ? 'আপনার' : 'নিচের সদস্যদের') + ' মাসিক জমা এখনো বাকি আছে। অনুগ্রহ করে দ্রুত পরিশোধ করে সমিতির হিসাব পরিষ্কার রাখতে সহযোগিতা করুন।';
   }
   function paintHeader(x, W, key, T) {
     var cx = W / 2, HH = 340, i, j;
@@ -1418,11 +1418,6 @@ tfoot td { font-weight: 600; border-top: 2px solid var(--line); }
     if (key === 'salam') {
       x.strokeStyle = 'rgba(255,255,255,.07)'; x.lineWidth = 2;
       for (var gy = 0; gy < HH + 90; gy += 90) for (var gx = 0; gx < W + 90; gx += 90) for (var q = 0; q < 2; q++) { x.save(); x.translate(gx, gy); x.rotate(q * Math.PI / 4); x.strokeRect(-26, -26, 52, 52); x.restore(); }
-    } else if (key === 'mill') {
-      x.strokeStyle = 'rgba(255,225,170,.09)'; x.lineWidth = 3;
-      for (i = 0; i < 16; i++) { var yy = 14 + i * 22; x.beginPath(); x.moveTo(0, yy); for (var xx = 0; xx <= W; xx += 40) x.lineTo(xx, yy + Math.sin(xx / 70 + i) * 5); x.stroke(); }
-      x.strokeStyle = 'rgba(255,225,170,.16)'; x.lineWidth = 3;
-      for (i = 1; i <= 7; i++) { x.beginPath(); x.arc(70, 70, i * 17, 0, Math.PI * 2); x.stroke(); }
     }
     x.restore();
     if (key === 'salam') {
@@ -1430,17 +1425,69 @@ tfoot td { font-weight: 600; border-top: 2px solid var(--line); }
       x.fillStyle = T.gold; x.beginPath(); x.arc(cx, 70, 34, 0, Math.PI * 2); x.fill(); x.restore();
       x.fillStyle = T.gold; x.beginPath(); for (var s = 0; s < 10; s++) { var rad = s % 2 ? 6 : 14, an = -Math.PI / 2 + s * Math.PI / 5; x.lineTo(cx + 40 + rad * Math.cos(an), 58 + rad * Math.sin(an)); } x.fill();
     } else if (key === 'mill') {
-      // tea cup with steam
-      var tx = cx, ty = 62;
-      x.strokeStyle = 'rgba(255,240,215,.75)'; x.lineWidth = 4; x.lineCap = 'round';
-      for (i = -1; i <= 1; i++) { x.beginPath(); x.moveTo(tx + i * 18, ty - 12); x.bezierCurveTo(tx + i * 18 - 9, ty - 26, tx + i * 18 + 9, ty - 38, tx + i * 18, ty - 52); x.stroke(); }
-      x.fillStyle = T.gold; x.beginPath(); x.moveTo(tx - 40, ty); x.lineTo(tx + 40, ty); x.quadraticCurveTo(tx + 36, ty + 42, tx, ty + 44); x.quadraticCurveTo(tx - 36, ty + 42, tx - 40, ty); x.fill();
-      x.strokeStyle = T.gold; x.lineWidth = 7; x.beginPath(); x.arc(tx + 42, ty + 16, 15, -Math.PI / 2, Math.PI / 2); x.stroke();
-      x.fillStyle = 'rgba(0,0,0,.25)'; x.beginPath(); x.ellipse(tx, ty + 52, 52, 7, 0, 0, Math.PI * 2); x.fill();
+      millScene(x, W, HH, T);
     }
     x.textAlign = 'center'; x.textBaseline = 'middle';
     x.fillStyle = '#FFFFFF'; x.font = fnt('800', 80, FD); x.fillText('আসসালামু আলাইকুম', cx, 175);
     return cx;
+  }
+  function sawBlade(x, cx, cy, r) {
+    var N = 40, step = Math.PI * 2 / N, i;
+    x.save(); x.translate(cx, cy);
+    x.beginPath();
+    for (i = 0; i < N; i++) { var a = i * step; x.lineTo(Math.cos(a) * r * 0.9, Math.sin(a) * r * 0.9); x.lineTo(Math.cos(a + step * 0.15) * r, Math.sin(a + step * 0.15) * r); x.lineTo(Math.cos(a + step) * r * 0.9, Math.sin(a + step) * r * 0.9); }
+    x.closePath();
+    var g = x.createLinearGradient(-r, -r, r, r); g.addColorStop(0, '#F1F4F6'); g.addColorStop(.45, '#AEB7BE'); g.addColorStop(1, '#6E7880');
+    x.fillStyle = g; x.shadowColor = 'rgba(0,0,0,.45)'; x.shadowBlur = 24; x.shadowOffsetY = 6; x.fill(); x.shadowColor = 'transparent';
+    x.strokeStyle = 'rgba(60,70,78,.6)'; x.lineWidth = 3; x.stroke();
+    x.strokeStyle = 'rgba(255,255,255,.55)'; x.lineWidth = 2; x.beginPath(); x.arc(0, 0, r * 0.8, 0, Math.PI * 2); x.stroke();
+    x.strokeStyle = 'rgba(70,80,88,.5)'; x.beginPath(); x.arc(0, 0, r * 0.74, 0, Math.PI * 2); x.stroke();
+    x.fillStyle = '#4A3320';
+    for (i = 0; i < 8; i++) { var an = i * Math.PI / 4; x.beginPath(); x.arc(Math.cos(an) * r * 0.5, Math.sin(an) * r * 0.5, r * 0.09, 0, Math.PI * 2); x.fill(); }
+    x.fillStyle = '#E9C066'; x.beginPath(); x.arc(0, 0, r * 0.17, 0, Math.PI * 2); x.fill();
+    x.fillStyle = '#3A2412'; x.beginPath(); x.arc(0, 0, r * 0.08, 0, Math.PI * 2); x.fill();
+    x.restore();
+  }
+  function logEnd(x, cx, cy, r) {
+    x.save(); x.translate(cx, cy);
+    x.shadowColor = 'rgba(0,0,0,.5)'; x.shadowBlur = 22; x.shadowOffsetY = 6;
+    x.fillStyle = '#4B2E17'; x.beginPath(); x.arc(0, 0, r, 0, Math.PI * 2); x.fill(); x.shadowColor = 'transparent';
+    var rg = x.createRadialGradient(-r * .2, -r * .2, 4, 0, 0, r); rg.addColorStop(0, '#E8B876'); rg.addColorStop(1, '#C48A4E');
+    x.fillStyle = rg; x.beginPath(); x.arc(0, 0, r - 13, 0, Math.PI * 2); x.fill();
+    for (var i = 1; i < 9; i++) { x.strokeStyle = i % 2 ? 'rgba(120,70,30,.55)' : 'rgba(255,230,190,.35)'; x.lineWidth = 2.5; x.beginPath(); x.ellipse(i * 1.5, i * 1, (r - 13) * i / 9, (r - 13) * i / 9 * .96, 0, 0, Math.PI * 2); x.stroke(); }
+    x.strokeStyle = 'rgba(80,45,20,.6)'; x.lineWidth = 3;
+    [[0.1, .55], [2.2, .5], [4.0, .6]].forEach(function (c) { x.beginPath(); x.moveTo(0, 0); x.lineTo(Math.cos(c[0]) * (r - 14) * c[1] * 1.6, Math.sin(c[0]) * (r - 14) * c[1] * 1.6); x.stroke(); });
+    x.fillStyle = '#5B3516'; x.beginPath(); x.arc(2, 1, 5, 0, Math.PI * 2); x.fill();
+    x.restore();
+  }
+  function teaGlass(x, tx, ty) {
+    x.strokeStyle = 'rgba(255,240,215,.8)'; x.lineWidth = 4; x.lineCap = 'round';
+    for (var i = -1; i <= 1; i++) { x.beginPath(); x.moveTo(tx + i * 16, ty - 10); x.bezierCurveTo(tx + i * 16 - 9, ty - 24, tx + i * 16 + 9, ty - 34, tx + i * 16, ty - 48); x.stroke(); }
+    x.fillStyle = '#F2B544'; x.beginPath(); x.moveTo(tx - 36, ty); x.lineTo(tx + 36, ty); x.quadraticCurveTo(tx + 32, ty + 38, tx, ty + 40); x.quadraticCurveTo(tx - 32, ty + 38, tx - 36, ty); x.fill();
+    x.fillStyle = 'rgba(120,60,10,.45)'; x.beginPath(); x.moveTo(tx - 33, ty + 6); x.lineTo(tx + 33, ty + 6); x.quadraticCurveTo(tx + 30, ty + 36, tx, ty + 38); x.quadraticCurveTo(tx - 30, ty + 36, tx - 33, ty + 6); x.fill();
+    x.strokeStyle = '#F2B544'; x.lineWidth = 6; x.beginPath(); x.arc(tx + 38, ty + 14, 13, -Math.PI / 2, Math.PI / 2); x.stroke();
+    x.fillStyle = 'rgba(0,0,0,.28)'; x.beginPath(); x.ellipse(tx, ty + 48, 50, 6, 0, 0, Math.PI * 2); x.fill();
+  }
+  function millScene(x, W, HH, T) {
+    var i, yy;
+    x.strokeStyle = 'rgba(255,225,170,.08)'; x.lineWidth = 3;
+    for (i = 0; i < 17; i++) { yy = 12 + i * 21; x.beginPath(); x.moveTo(0, yy); for (var xx = 0; xx <= W; xx += 40) x.lineTo(xx, yy + Math.sin(xx / 70 + i) * 5); x.stroke(); }
+    x.strokeStyle = 'rgba(0,0,0,.18)'; x.lineWidth = 2;
+    for (i = 1; i < 4; i++) { x.beginPath(); x.moveTo(0, i * 85); x.lineTo(W, i * 85); x.stroke(); }
+    sawBlade(x, 40, 150, 190);
+    logEnd(x, W - 20, 160, 160);
+    var seed = 7; x.fillStyle = 'rgba(244,214,160,.55)';
+    for (i = 0; i < 70; i++) { seed = (seed * 9301 + 49297) % 233280; var px = 150 + (seed / 233280) * (W - 300); seed = (seed * 9301 + 49297) % 233280; var py = 20 + (seed / 233280) * (HH - 40); x.beginPath(); x.arc(px, py, 1.4 + (i % 3) * .7, 0, Math.PI * 2); x.fill(); }
+    teaGlass(x, W / 2, 62);
+  }
+  function mFrame(x, W, H) {
+    var g = x.createLinearGradient(0, 0, W, H); g.addColorStop(0, '#5A3418'); g.addColorStop(.5, '#2F1B0D'); g.addColorStop(1, '#55321A');
+    x.fillStyle = g; x.fillRect(0, 0, W, 22); x.fillRect(0, H - 22, W, 22); x.fillRect(0, 0, 22, H); x.fillRect(W - 22, 0, 22, H);
+    x.strokeStyle = 'rgba(255,220,160,.18)'; x.lineWidth = 2;
+    for (var i = 0; i < 4; i++) { x.beginPath(); x.moveTo(0, 5 + i * 5); x.lineTo(W, 5 + i * 5); x.stroke(); x.beginPath(); x.moveTo(0, H - 5 - i * 5); x.lineTo(W, H - 5 - i * 5); x.stroke(); }
+    x.strokeStyle = '#E9C066'; x.lineWidth = 3; x.beginPath(); x.moveTo(32, 376); x.lineTo(32, H - 32); x.lineTo(W - 32, H - 32); x.lineTo(W - 32, 376); x.stroke();
+    x.fillStyle = '#E9C066';
+    [[11, 11], [W - 11, 11], [11, H - 11], [W - 11, H - 11]].forEach(function (p) { x.beginPath(); x.arc(p[0], p[1], 6, 0, Math.PI * 2); x.fill(); });
   }
   function drawAlertCard(chunk, idx, count, grand, nAll, key, names) {
     var W = 1080, M = 56, BW = W - 2 * M, IN = 34, soc = curSociety(), T = THEMES[key];
@@ -1461,13 +1508,16 @@ tfoot td { font-weight: 600; border-top: 2px solid var(--line); }
     var c = document.createElement('canvas'); c.width = W; c.height = H;
     var x = c.getContext('2d'); x.textBaseline = 'middle';
     x.fillStyle = T.bg; x.fillRect(0, 0, W, H);
+    if (key === 'mill') { x.strokeStyle = 'rgba(140,90,40,.07)'; x.lineWidth = 2; for (var ty = 370; ty < H; ty += 26) { x.beginPath(); x.moveTo(0, ty); for (var tx3 = 0; tx3 <= W; tx3 += 60) x.lineTo(tx3, ty + Math.sin(tx3 / 90 + ty) * 4); x.stroke(); } }
     var cx = paintHeader(x, W, key, T);
     x.fillStyle = T.gold; x.font = fnt('600', 38, FD); x.fillText(fit(x, soc ? soc.name : 'সমিতি', W - 120), cx, 248);
-    x.fillStyle = 'rgba(255,255,255,.82)'; x.font = fnt('400', 28); x.fillText(T.sub, cx, 296);
+    if (T.sub) { x.fillStyle = 'rgba(255,255,255,.82)'; x.font = fnt('400', 28); x.fillText(T.sub, cx, 296); }
+    if (key === 'mill') { var nw = x.measureText(soc ? soc.name : 'সমিতি').width; x.font = fnt('600', 38, FD); nw = Math.min(W - 120, x.measureText(soc ? soc.name : 'সমিতি').width); x.fillStyle = T.gold; x.fillRect(cx - nw / 2 - 150, 247, 110, 3); x.fillRect(cx + nw / 2 + 40, 247, 110, 3); [cx - nw / 2 - 28, cx + nw / 2 + 28].forEach(function (dx) { x.beginPath(); x.moveTo(dx, 238); x.lineTo(dx + 9, 248); x.lineTo(dx, 258); x.lineTo(dx - 9, 248); x.fill(); }); }
     if (key === 'mill') {
-      x.fillStyle = T.deep; x.beginPath(); x.moveTo(0, 336);
-      for (var tx2 = 0; tx2 < W; tx2 += 36) { x.lineTo(tx2 + 18, 362); x.lineTo(tx2 + 36, 336); }
-      x.lineTo(W, 330); x.lineTo(0, 330); x.closePath(); x.fill();
+      var sg = x.createLinearGradient(0, 326, 0, 368); sg.addColorStop(0, '#F4F6F8'); sg.addColorStop(1, '#8D979F');
+      x.fillStyle = sg; x.beginPath(); x.moveTo(0, 336);
+      for (var tx2 = 0; tx2 < W; tx2 += 36) { x.lineTo(tx2 + 4, 336); x.lineTo(tx2 + 8, 366); x.lineTo(tx2 + 36, 336); }
+      x.lineTo(W, 326); x.lineTo(0, 326); x.closePath(); x.fill();
     } else { x.fillStyle = T.gold; x.fillRect(0, 336, W, 4); }
     var y = 340 + 40; x.textAlign = 'left'; x.fillStyle = T.ink; x.font = fnt('400', 34);
     il.forEach(function (ln, i) { x.fillText(ln, M + 10, y + 26 + i * 52); });
@@ -1480,10 +1530,10 @@ tfoot td { font-weight: 600; border-top: 2px solid var(--line); }
       x.fillStyle = 'rgba(40,25,10,.08)'; rr(x, M, y + 4, BW, b.h, 26); x.fill();
       x.fillStyle = '#FFFFFF'; rr(x, M, y, BW, b.h, 26); x.fill();
       x.strokeStyle = T.line; x.lineWidth = 2; rr(x, M, y, BW, b.h, 26); x.stroke();
-      x.fillStyle = T.due; x.save(); rr(x, M, y, BW, b.h, 26); x.clip(); x.fillRect(M, y, 10, b.h); x.restore();
+      x.fillStyle = key === 'mill' ? '#6B4120' : T.due; x.save(); rr(x, M, y, BW, b.h, 26); x.clip(); x.fillRect(M, y, key === 'mill' ? 14 : 10, b.h); x.restore();
       var ny = y + 26 + 36;
-      x.fillStyle = T.deep; x.beginPath(); x.arc(M + IN + 26, ny, 26, 0, Math.PI * 2); x.fill();
-      x.fillStyle = '#FFFFFF'; x.font = fnt('700', 28, FD); x.textAlign = 'center'; x.fillText(YF.format(idx * 6 + bi + 1), M + IN + 26, ny + 1);
+      x.fillStyle = key === 'mill' ? T.gold : T.deep; x.beginPath(); x.arc(M + IN + 26, ny, 26, 0, Math.PI * 2); x.fill();
+      x.fillStyle = key === 'mill' ? T.deep : '#FFFFFF'; x.font = fnt('700', 28, FD); x.textAlign = 'center'; x.fillText(YF.format(idx * 6 + bi + 1), M + IN + 26, ny + 1);
       x.textAlign = 'left'; x.fillStyle = '#13201A'; x.font = fnt('700', 42, FD); x.fillText(fit(x, b.it.m.name, 560), M + IN + 70, ny);
       x.textAlign = 'right'; x.fillStyle = T.due; x.font = fnt('800', 46, FD); x.fillText(taka(b.it.o.total), M + BW - IN, ny);
       var cy = y + 26 + 72 + 10;
@@ -1499,14 +1549,16 @@ tfoot td { font-weight: 600; border-top: 2px solid var(--line); }
     });
     y += 18;
     x.fillStyle = T.deep; rr(x, M, y, BW, 120, 30); x.fill();
+    if (key === 'mill') { x.strokeStyle = T.gold; x.lineWidth = 3; rr(x, M + 8, y + 8, BW - 16, 104, 24); x.stroke(); }
     x.textAlign = 'left'; x.fillStyle = 'rgba(255,255,255,.82)'; x.font = fnt('400', 28); x.fillText('মোট বকেয়া (' + YF.format(nAll) + ' জন)', M + 34, y + 36);
     x.fillStyle = T.gold; x.font = fnt('800', 52, FD); x.fillText(taka(grand), M + 34, y + 82);
     if (count > 1) { x.textAlign = 'right'; x.fillStyle = 'rgba(255,255,255,.82)'; x.font = fnt('500', 28); x.fillText('কার্ড ' + YF.format(idx + 1) + '/' + YF.format(count), M + BW - 34, y + 60); }
     y += 120 + 46;
     x.textAlign = 'center'; x.fillStyle = T.ink; x.font = fnt('500', 32);
-    x.fillText(key === 'mill' ? 'চায়ের বিল পরে, আগে সমিতির চাঁদা! জাযাকাল্লাহু খাইরান।' : key === 'plain' ? 'আপনার সহযোগিতার জন্য ধন্যবাদ।' : 'অনুগ্রহ করে দ্রুত জমা দিন। জাযাকাল্লাহু খাইরান।', cx, y);
+    x.fillText(key === 'mill' ? 'চায়ের বিল পরে, আগে সমিতির জমা! জাযাকাল্লাহু খাইরান।' : key === 'plain' ? 'আপনার সহযোগিতার জন্য ধন্যবাদ।' : 'অনুগ্রহ করে দ্রুত জমা দিন। জাযাকাল্লাহু খাইরান।', cx, y);
     x.fillStyle = T.mute; x.font = fnt('400', 28); x.fillText('— কোষাধ্যক্ষ, ' + (soc ? soc.name : 'সমিতি'), cx, y + 54);
     x.fillStyle = T.gold; x.fillRect(cx - 45, y + 100, 90, 4);
+    if (key === 'mill') mFrame(x, W, H);
     return c;
   }
   function makeAlertCards() {
